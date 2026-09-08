@@ -173,11 +173,11 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 ### Задачи
 
 1. Запросить API-ключ на `https://maps.vk.com/ru/welcome/`; до ответа использовать `demo.maps.vk.com` для REST.
-2. Написать в `support.maps@lists.vk.team`: (1) актуальные координаты Android-выкладки `com.vk.maps:maps-native-sdk`
-   на `nexus-external.vkteam.ru` (имя репозитория, нужны ли креды) и список доступных версий; (2) есть ли
-   документация нативного Android SDK (аналог DocC) и где она; (3) есть ли кластеризация и Polyline-source в
-   нативном SDK; (4) условия EULA `https://help.mail.ru/legal/terms/maps/terms` для стороннего open-source плагина.
-   Вопросы и ответы фиксировать в `docs/questions-for-vendor.md`.
+2. Отправить письмо в `support.maps@lists.vk.team`. Готовый текст и таблица для фиксации переписки —
+   [`../docs/questions-for-vendor.md`](../docs/questions-for-vendor.md). Четыре вопроса: (1) адрес Android-выкладки
+   после переезда на Nexus, нужны ли креды, актуальные координаты и версии; (2) документация нативного Android SDK
+   и какое поколение считать актуальным; (3) кластеризация и источник для ломаных в нативном SDK; (4) условия EULA
+   для стороннего open-source плагина на pub.dev.
 3. Проверить скриптом доступность артефактов и зафиксировать результат в `docs/platform-matrix.md`:
    `pod spec cat VKMapsSDK`, `swift package resolve` на `vk-maps-distribution` 1.4.4.14633, `curl` по Nexus
    (`/service/rest/v1/repositories`, `/service/rest/v1/search?group=com.vk.maps`) и по старым Maven-путям Artifactory.
