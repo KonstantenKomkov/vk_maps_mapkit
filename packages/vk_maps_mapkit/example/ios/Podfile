@@ -28,7 +28,10 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  # SDK VK Карт поставляется статическими xcframework, поэтому линковка
+  # должна быть статической: с обычным use_frameworks! pod install падает
+  # на «transitive dependencies that include statically linked binaries».
+  use_frameworks! :linkage => :static
 
   # SDK VK Карт версии 1.4.x нет в CocoaPods trunk (там только 0.5.x),
   # поэтому подспек берётся по ссылке из репозитория дистрибутива.

@@ -13,6 +13,10 @@ PACKAGES=(
 )
 
 fail=0
+
+echo "==================== версии нативного SDK ===================="
+./tool/check_sdk_versions.sh || fail=1
+
 for p in "${PACKAGES[@]}"; do
   echo
   echo "==================== $p ===================="
