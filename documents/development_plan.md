@@ -147,6 +147,7 @@ federated-плагин от команды Flutter. Ниже — только т
 | Режим platform view — параметр виджета, а не хардкод: `PlatformViewType { Hybrid, Virtual, TextureHybrid, Compat }` | `platform_view_type.dart` | этап 5 |
 | Проброс `gestureRecognizers` и `hitTestBehavior` из виджета в platform view | `platform_view_widget.dart` | этап 5 |
 | Явный жизненный цикл SDK: `onStart()` / `onStop()` + `flutter_plugin_android_lifecycle` | `mapkit.dart`, pubspec Яндекса | этапы 3, 5 |
+| `compileSdk` берётся из Flutter (`flutter.compileSdkVersion`), а не прибивается числом; lint с `warningsAsErrors` | `google_maps_flutter_android/android/build.gradle.kts` | этап 3 |
 | Идемпотентная инициализация одним вызовом: `initMapkit(apiKey:, locale:, userId:, options:)`, повторный вызов не переинициализирует | `bindings/init.dart` | этап 5 |
 
 Опорные версии Android-обвязки у Яндекса (полезно как точка в матрице KGP): AGP 8.6.0, KGP 2.0.21, JDK 21,
@@ -288,15 +289,16 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 5. Жизненный цикл: `dispose` platform view освобождает `MapView` и стили; повторное создание карты после `dispose`
    не падает; поворот экрана.
 6. Unit-тесты Kotlin для маппинга enum/моделей (JUnit, как `android/src/test/kotlin` в образце).
-7. **Поддержка KGP (Kotlin Gradle Plugin).** Плагин должен собираться у приложений и на старом, и на новом
-   Android-обвязе Flutter: объявление через декларативный блок `plugins { id "com.android.library"; id
-   "org.jetbrains.kotlin.android" }` вместо `apply plugin:`, совместимость с загрузчиком плагинов из
-   `settings.gradle`/`settings.gradle.kts`. Версия KGP не прибивается жёстко: берётся из версии, объявленной
-   приложением, а в плагине фиксируется только минимально поддерживаемая. Составить и держать в
-   `docs/platform-matrix.md` матрицу совместимости AGP × KGP × Gradle × JDK (минимум: KGP 1.9.x и 2.x, AGP 8.x,
-   Gradle 8.x, JDK 17) и прогонять сборку example по её углам. `build.gradle.kts` в примере — как отдельная
-   проверка, что Kotlin DSL у потребителя не ломается. Опорная точка — обвязка Яндекса: AGP 8.6.0, KGP 2.0.21,
-   JDK 21, `compileSdk 35`.
+7. **Поддержка KGP (Kotlin Gradle Plugin) — объявленный пол, две точки проверки** (решение Р-6).
+   Сборка плагина: `android/build.gradle.kts` на Kotlin DSL, объявление через декларативный `plugins {}`,
+   `implementation` для нативной зависимости, версия KGP не прибивается жёстко — берётся из объявленной
+   приложением. `compileSdk` не задаётся числом, а берётся из Flutter (`compileSdk = flutter.compileSdkVersion`,
+   как в `google_maps_flutter_android`); `minSdk 24`. Lint с `warningsAsErrors = true`.
+   Пол пишется в README и `docs/platform-matrix.md` одной строкой: **AGP 8.x, KGP 1.9, Gradle 8.x, JDK 17**.
+   В CI гоняются ровно две сборки example — на этом минимуме и на текущих версиях (опорные точки на сегодня:
+   AGP 8.13, KGP 2.3, Gradle 9.3, JDK 17; у Яндекса — AGP 8.6.0, KGP 2.0.21, JDK 21). Отдельно, вне версий,
+   проверяется способ объявления: приложение на Groovy DSL и приложение на Kotlin DSL подключают плагин без
+   правок у себя.
 8. Жизненный цикл активити через `flutter_plugin_android_lifecycle`: карта освобождает ресурсы и глушит сетевые
    запросы в фоне, возобновляет при возврате (у Яндекса это вынесено в явные `onStart`/`onStop`).
 
@@ -305,8 +307,10 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 - Карта из example рисуется на эмуляторе API 35 и физическом устройстве; камера, маркер, смена стиля, tap-события
   работают; `dispose`/пересоздание без утечек и крашей.
 - `./gradlew :vk_maps_flutter_android:testDebugUnitTest` в CI зелёный.
-- Матрица AGP × KGP × Gradle × JDK заполнена, сборка example зелёная на минимальной и максимальной точках;
-  приложение на Groovy DSL и приложение на Kotlin DSL подключают плагин без правок в своём проекте.
+- Пол версий (AGP 8.x, KGP 1.9, Gradle 8.x, JDK 17) объявлен в README и `docs/platform-matrix.md`; обе сборки
+  example — на полу и на текущих версиях — зелёные.
+- Приложение на Groovy DSL и приложение на Kotlin DSL подключают плагин без правок в своём проекте.
+- Сборка на версиях ниже пола падает с понятным сообщением, а не загадочной ошибкой компиляции.
 
 ---
 
