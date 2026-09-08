@@ -181,10 +181,9 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 3. Проверить скриптом доступность артефактов и зафиксировать результат в `docs/platform-matrix.md`:
    `pod spec cat VKMapsSDK`, `swift package resolve` на `vk-maps-distribution` 1.4.4.14633, `curl` по Nexus
    (`/service/rest/v1/repositories`, `/service/rest/v1/search?group=com.vk.maps`) и по старым Maven-путям Artifactory.
-4. Составить таблицу поверхности API нативного SDK по документации: распаковать `MapsNativeSDK.doccarchive` из
-   релиза 1.4.4.14633, выгрузить символы (контроллеры камеры, оверлеев, пользовательской точки, `Style`, слушатели
-   событий) в `docs/native-api-surface.md`; для Android — то же по документации вендора после ответа на п. 2.
-   Эта таблица — основа Pigeon-контракта этапа 2.
+4. ~~Составить таблицу поверхности API нативного SDK~~ — сделано 8 сентября 2026:
+   [`../docs/native-api-surface.md`](../docs/native-api-surface.md) сверяет контракт с символами DocC (iOS) и
+   документацией Android, включая раздел «чего в контракте нет намеренно».
 5. Дополнить `docs/design-decisions.md` версиями SDK (iOS 1.4.4.14633; Android — по ответу вендора). Решения Р-1…Р-5
    (нативный SDK, Pigeon с общим контрактом, `implementation`, federated-структура, CocoaPods + SPM без web)
    уже записаны.
