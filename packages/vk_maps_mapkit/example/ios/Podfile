@@ -30,6 +30,11 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
 
+  # SDK VK Карт версии 1.4.x нет в CocoaPods trunk (там только 0.5.x),
+  # поэтому подспек берётся по ссылке из репозитория дистрибутива.
+  pod 'VKMapsSDK',
+      :podspec => 'https://raw.githubusercontent.com/maps-mailru/vk-maps-distribution/1.4.4.14633/VKMapsSDK.podspec'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths

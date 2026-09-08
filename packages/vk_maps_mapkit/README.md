@@ -44,12 +44,26 @@ VkMap(
 
 ### iOS
 
-Минимум — iOS 15. Работают оба способа подключения: CocoaPods и Swift
-Package Manager. В `ios/Podfile` приложения должно быть:
+Минимум — iOS 15. Работают оба способа подключения: Swift Package Manager и
+CocoaPods.
+
+В `ios/Podfile` приложения:
 
 ```ruby
 platform :ios, '15.0'
+
+target 'Runner' do
+  use_frameworks!
+
+  # Версии 1.4.x нет в CocoaPods trunk (там только 0.5.x), поэтому подспек
+  # берётся по ссылке из репозитория дистрибутива VK.
+  pod 'VKMapsSDK',
+      :podspec => 'https://raw.githubusercontent.com/maps-mailru/vk-maps-distribution/1.4.4.14633/VKMapsSDK.podspec'
+end
 ```
+
+Через SPM (`flutter config --enable-swift-package-manager`) дополнительных
+строк не нужно: пакет тянет SDK сам.
 
 ### Android
 
