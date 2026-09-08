@@ -53,7 +53,10 @@ CocoaPods.
 platform :ios, '15.0'
 
 target 'Runner' do
-  use_frameworks!
+  # SDK поставляется статическими xcframework: с обычным use_frameworks!
+  # pod install падает на «transitive dependencies that include statically
+  # linked binaries».
+  use_frameworks! :linkage => :static
 
   # Версии 1.4.x нет в CocoaPods trunk (там только 0.5.x), поэтому подспек
   # берётся по ссылке из репозитория дистрибутива VK.

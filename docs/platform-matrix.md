@@ -54,6 +54,6 @@
 
 | Платформа | Пол | Проверяется в CI |
 | --- | --- | --- |
-| iOS | iOS 15, Swift 5.10, CocoaPods и SPM | обе схемы подключения |
+| iOS | iOS 15, Swift 5.10, CocoaPods (`use_frameworks! :linkage => :static` и подспек по ссылке) и SPM | обе схемы подключения |
 | Android | AGP 8.x, KGP 1.9, Gradle 8.x, JDK 17, `minSdk 24` | пол и текущие версии (решение Р-6) |
 | Flutter | 3.35, Dart 3.9 | одна версия |

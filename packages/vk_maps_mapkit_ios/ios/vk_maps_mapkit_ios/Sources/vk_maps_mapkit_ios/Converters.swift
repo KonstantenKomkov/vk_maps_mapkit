@@ -94,7 +94,7 @@ extension PlatformMarkerAlignment {
 extension PlatformAnimationOptions {
   var native: MapAnimationOptions {
     let seconds = Double(durationMillis) / 1000.0
-    let easing: MapAnimationEasing
+    let easing: MapCameraAnimationEasing
     switch self.easing {
     case .linear: easing = .linear
     case .easeIn: easing = .easeIn
@@ -124,8 +124,8 @@ extension PlatformCameraOptions {
 extension MapCameraAnimationResult {
   var message: PlatformCameraAnimationResult {
     switch self {
-    case .finished: return .finished
-    default: return .cancelled
+    case .ended: return .finished
+    case .cancelled: return .cancelled
     }
   }
 }
@@ -135,12 +135,10 @@ extension MapEvent.CameraMovingReason {
     switch self {
     case .gesture, .inertia:
       return .gesture
-    case .gesture(type: _):
-      return .gesture
     case .followMode:
       return .followMode
-    default:
-      // control, custom, code — всё это программные изменения камеры.
+    case .control, .code, .custom:
+      // Всё это — программные изменения камеры.
       return .api
     }
   }
@@ -155,10 +153,12 @@ extension MapEvent.CameraMovingPhase {
       return .moving
     case .cancelled:
       return .cancelled
-    case .singleCompleted, .singeCompleted:
+    case .singleCompleted:
       return .singleCompleted
-    default:
-      // ended, finished и всё, что появится позже, — завершение движения.
+    case .allCompleted:
+      return .allCompleted
+    @unknown default:
+      // Новая фаза в будущей версии SDK трактуется как завершение.
       return .allCompleted
     }
   }
