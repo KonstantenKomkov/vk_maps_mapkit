@@ -27,6 +27,12 @@ final class FakeVkMapsPlatform extends VkMapsPlatform {
   /// Начальные параметры последней созданной карты.
   VkMapInitialConfiguration? lastInitialConfiguration;
 
+  /// Последний переданный GeoJSON источника.
+  String? lastGeoJson;
+
+  /// Последний добавленный слой.
+  VkStyleLayer? lastLayer;
+
   final Map<int, StreamController<VkMapEvent>> _events =
       <int, StreamController<VkMapEvent>>{};
 
@@ -174,6 +180,58 @@ final class FakeVkMapsPlatform extends VkMapsPlatform {
   @override
   Future<void> removeStyleImage(int viewId, String imageId) async =>
       calls.add('removeStyleImage($viewId, $imageId)');
+
+  @override
+  Future<void> addGeoJsonSource(
+    int viewId,
+    String sourceId,
+    String geoJson,
+  ) async {
+    calls.add('addGeoJsonSource($viewId, $sourceId)');
+    lastGeoJson = geoJson;
+  }
+
+  @override
+  Future<void> setGeoJsonSourceData(
+    int viewId,
+    String sourceId,
+    String geoJson,
+  ) async {
+    calls.add('setGeoJsonSourceData($viewId, $sourceId)');
+    lastGeoJson = geoJson;
+  }
+
+  @override
+  Future<void> addEncodedPolylineSource(
+    int viewId,
+    String sourceId,
+    String polyline,
+  ) async => calls.add('addEncodedPolylineSource($viewId, $sourceId)');
+
+  @override
+  Future<void> removeSource(int viewId, String sourceId) async =>
+      calls.add('removeSource($viewId, $sourceId)');
+
+  @override
+  Future<void> addLayer(
+    int viewId,
+    VkStyleLayer layer, {
+    String? beforeLayerId,
+  }) async {
+    calls.add('addLayer($viewId, ${layer.id}, before: $beforeLayerId)');
+    lastLayer = layer;
+  }
+
+  @override
+  Future<void> removeLayer(int viewId, String layerId) async =>
+      calls.add('removeLayer($viewId, $layerId)');
+
+  @override
+  Future<void> setLayerVisibility(
+    int viewId,
+    String layerId,
+    bool visible,
+  ) async => calls.add('setLayerVisibility($viewId, $layerId, $visible)');
 
   @override
   Future<void> dispose(int viewId) async {

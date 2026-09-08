@@ -133,6 +133,61 @@ class _RecordingHostApi implements VkMapsHostApi {
   }
 
   @override
+  Future<void> addGeoJsonSource(
+    int viewId,
+    String sourceId,
+    String geoJson,
+  ) async {
+    calls.add('addGeoJsonSource($viewId, $sourceId)');
+  }
+
+  @override
+  Future<void> setGeoJsonSourceData(
+    int viewId,
+    String sourceId,
+    String geoJson,
+  ) async {
+    calls.add('setGeoJsonSourceData($viewId, $sourceId)');
+  }
+
+  @override
+  Future<void> addEncodedPolylineSource(
+    int viewId,
+    String sourceId,
+    String polyline,
+  ) async {
+    calls.add('addEncodedPolylineSource($viewId, $sourceId)');
+  }
+
+  @override
+  Future<void> removeSource(int viewId, String sourceId) async {
+    calls.add('removeSource($viewId, $sourceId)');
+  }
+
+  @override
+  Future<void> addLayer(
+    int viewId,
+    String layerJson,
+    String? beforeLayerId,
+  ) async {
+    calls.add('addLayer($viewId, $layerJson, before: $beforeLayerId)');
+  }
+
+  @override
+  Future<void> removeLayer(int viewId, String layerId) async {
+    calls.add('removeLayer($viewId, $layerId)');
+  }
+
+  @override
+  Future<void> setLayerVisibility(
+    int viewId,
+    String layerId,
+    bool visible,
+  ) async {
+    calls.add('setLayerVisibility($viewId, $layerId, $visible)');
+  }
+
+  @override
   Future<void> dispose(int viewId) async {
     calls.add('dispose($viewId)');
   }

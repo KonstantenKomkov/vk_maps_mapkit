@@ -232,6 +232,67 @@ final class VkMapPlatformView: NSObject, FlutterPlatformView, MapViewDelegate {
     mapView?.style?.removeImage(imageID: imageId)
   }
 
+  // MARK: - Источники и слои
+
+  private func requireStyle() throws -> MapStyle {
+    guard let style = try requireMap().style else {
+      throw VkMapsError.styleNotReady
+    }
+    return style
+  }
+
+  func addGeoJsonSource(sourceId: String, geoJson: String) throws {
+    let source = try MapDataSource(
+      id: sourceId,
+      json: geoJson,
+      type: .geojson,
+      receiveTapEvents: true
+    )
+    try requireStyle().addSource(source)
+  }
+
+  func setGeoJsonSourceData(sourceId: String, geoJson: String) throws {
+    guard let source = try requireStyle().source(by: sourceId) else {
+      throw VkMapsError.unknownSource(sourceId)
+    }
+    source.setGeoJSON(geoJson)
+  }
+
+  func addEncodedPolylineSource(sourceId: String, polyline: String) throws {
+    let source = try MapDataSource(
+      id: sourceId,
+      encodedString: polyline,
+      type: .geojson,
+      receiveTapEvents: true
+    )
+    try requireStyle().addSource(source)
+  }
+
+  func removeSource(sourceId: String) throws {
+    try requireStyle().removeSource(by: sourceId)
+  }
+
+  func addLayer(layerJson: String, beforeLayerId: String?) throws {
+    let layer = try MapLayer(json: layerJson)
+    let style = try requireStyle()
+    if let beforeLayerId {
+      try style.insertLayer(layer, before: beforeLayerId)
+    } else {
+      try style.addLayer(layer)
+    }
+  }
+
+  func removeLayer(layerId: String) throws {
+    try requireStyle().removeLayer(by: layerId)
+  }
+
+  func setLayerVisibility(layerId: String, visible: Bool) throws {
+    guard let layer = try requireStyle().layer(by: layerId) else {
+      throw VkMapsError.unknownLayer(layerId)
+    }
+    layer.isVisible = visible
+  }
+
   func dispose() {
     mapView?.delegate = nil
     markerIds.removeAll()
@@ -330,6 +391,10 @@ enum VkMapsError: Error {
   case unknownView(Int64)
   /// Карта ещё не создана: не пришли параметры создания.
   case notInitialized(Int64)
-  /// Стиль ещё не загружен, работать с его изображениями рано.
+  /// Стиль ещё не загружен, работать с его содержимым рано.
   case styleNotReady
+  /// В стиле нет источника с таким идентификатором.
+  case unknownSource(String)
+  /// В стиле нет слоя с таким идентификатором.
+  case unknownLayer(String)
 }

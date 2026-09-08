@@ -28,6 +28,7 @@ export 'package:vk_maps_mapkit_platform_interface/vk_maps_mapkit_platform_interf
         VkCameraPosition,
         VkEdgeInsets,
         VkFeaturesSelectionMode,
+        VkGeoJson,
         VkJsonMapStyle,
         VkLatLon,
         VkLatLonBounds,
@@ -50,8 +51,10 @@ export 'package:vk_maps_mapkit_platform_interface/vk_maps_mapkit_platform_interf
         VkPredefinedStyle,
         VkScreenPoint,
         VkStyleAppliedEvent,
+        VkStyleLayer,
         VkUrlMapStyle;
 
+export 'src/clustering.dart';
 export 'src/vk_map.dart';
 export 'src/vk_map_controller.dart';
 export 'src/vk_maps.dart';

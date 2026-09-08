@@ -19,6 +19,7 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
+  meta: ^1.16.0
   vk_maps_mapkit_android: ^0.1.0
   vk_maps_mapkit_ios: ^0.1.0
   vk_maps_mapkit_platform_interface: ^0.1.0

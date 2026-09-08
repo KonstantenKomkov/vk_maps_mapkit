@@ -1,5 +1,6 @@
 export 'camera.dart';
 export 'edge_insets.dart';
+export 'geo_json.dart';
 export 'lat_lon.dart';
 export 'lat_lon_bounds.dart';
 export 'map_configuration.dart';
@@ -9,3 +10,4 @@ export 'maps_object.dart';
 export 'maps_object_updates.dart';
 export 'marker.dart';
 export 'screen_point.dart';
+export 'style_layer.dart';

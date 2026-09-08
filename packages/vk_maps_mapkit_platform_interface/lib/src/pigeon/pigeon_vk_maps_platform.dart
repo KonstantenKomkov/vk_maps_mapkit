@@ -181,6 +181,43 @@ base class PigeonVkMapsPlatform extends VkMapsPlatform
       _host.removeStyleImage(viewId, imageId);
 
   @override
+  Future<void> addGeoJsonSource(int viewId, String sourceId, String geoJson) =>
+      _host.addGeoJsonSource(viewId, sourceId, geoJson);
+
+  @override
+  Future<void> setGeoJsonSourceData(
+    int viewId,
+    String sourceId,
+    String geoJson,
+  ) => _host.setGeoJsonSourceData(viewId, sourceId, geoJson);
+
+  @override
+  Future<void> addEncodedPolylineSource(
+    int viewId,
+    String sourceId,
+    String polyline,
+  ) => _host.addEncodedPolylineSource(viewId, sourceId, polyline);
+
+  @override
+  Future<void> removeSource(int viewId, String sourceId) =>
+      _host.removeSource(viewId, sourceId);
+
+  @override
+  Future<void> addLayer(
+    int viewId,
+    VkStyleLayer layer, {
+    String? beforeLayerId,
+  }) => _host.addLayer(viewId, layer.toJsonString(), beforeLayerId);
+
+  @override
+  Future<void> removeLayer(int viewId, String layerId) =>
+      _host.removeLayer(viewId, layerId);
+
+  @override
+  Future<void> setLayerVisibility(int viewId, String layerId, bool visible) =>
+      _host.setLayerVisibility(viewId, layerId, visible);
+
+  @override
   Future<void> dispose(int viewId) async {
     await _host.dispose(viewId);
     await _events.remove(viewId)?.close();

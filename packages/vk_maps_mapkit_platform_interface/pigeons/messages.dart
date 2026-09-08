@@ -369,6 +369,30 @@ abstract class VkMapsHostApi {
   /// Убирает изображение из стиля.
   void removeStyleImage(int viewId, String imageId);
 
+  /// Добавляет в стиль источник данных GeoJSON.
+  @async
+  void addGeoJsonSource(int viewId, String sourceId, String geoJson);
+
+  /// Заменяет данные источника GeoJSON.
+  void setGeoJsonSourceData(int viewId, String sourceId, String geoJson);
+
+  /// Добавляет источник из закодированной ломаной маршрута.
+  @async
+  void addEncodedPolylineSource(int viewId, String sourceId, String polyline);
+
+  /// Убирает источник из стиля.
+  void removeSource(int viewId, String sourceId);
+
+  /// Добавляет слой, описанный JSON по спецификации Mapbox Style.
+  @async
+  void addLayer(int viewId, String layerJson, String? beforeLayerId);
+
+  /// Убирает слой из стиля.
+  void removeLayer(int viewId, String layerId);
+
+  /// Показывает или скрывает слой.
+  void setLayerVisibility(int viewId, String layerId, bool visible);
+
   /// Освобождает ресурсы карты.
   void dispose(int viewId);
 }

@@ -8,7 +8,9 @@ import io.flutter.plugin.platform.PlatformView
 import ru.mail.maps.data.LatLon
 import ru.mail.maps.data.MapLocation
 import ru.mail.maps.data.MapStyle
+import ru.mail.maps.data.GeojsonSource
 import ru.mail.maps.data.MarkerEntity
+import ru.mail.maps.data.PolylineSource
 import ru.mail.maps.sdk.Map
 import ru.mail.maps.sdk.views.MapView
 
@@ -209,6 +211,24 @@ internal class VkMapPlatformView(
         )
       )
     }
+
+  fun addGeoJsonSource(sourceId: String, geoJson: String) = withMap { map ->
+    map.addMapDataSource(GeojsonSource(sourceId, geoJson.toByteArray()))
+  }
+
+  fun setGeoJsonSourceData(sourceId: String, geoJson: String) = withMap { map ->
+    // Отдельного обновления данных у SDK нет: источник пересоздаётся.
+    map.removeSource(sourceId)
+    map.addMapDataSource(GeojsonSource(sourceId, geoJson.toByteArray()))
+  }
+
+  fun addEncodedPolylineSource(sourceId: String, polyline: String) = withMap { map ->
+    map.addMapDataSource(PolylineSource(sourceId, polyline))
+  }
+
+  fun removeSource(sourceId: String) = withMap { map -> map.removeSource(sourceId) }
+
+  fun removeLayer(layerId: String) = withMap { map -> map.removeLayer(layerId) }
 
   private fun tapEvent(
     type: PlatformMapEventType,

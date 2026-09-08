@@ -1148,6 +1148,20 @@ interface VkMapsHostApi {
   fun addStyleImage(viewId: Long, imageId: String, pngBytes: ByteArray, scale: Double, callback: (Result<Unit>) -> Unit)
   /** Убирает изображение из стиля. */
   fun removeStyleImage(viewId: Long, imageId: String)
+  /** Добавляет в стиль источник данных GeoJSON. */
+  fun addGeoJsonSource(viewId: Long, sourceId: String, geoJson: String, callback: (Result<Unit>) -> Unit)
+  /** Заменяет данные источника GeoJSON. */
+  fun setGeoJsonSourceData(viewId: Long, sourceId: String, geoJson: String)
+  /** Добавляет источник из закодированной ломаной маршрута. */
+  fun addEncodedPolylineSource(viewId: Long, sourceId: String, polyline: String, callback: (Result<Unit>) -> Unit)
+  /** Убирает источник из стиля. */
+  fun removeSource(viewId: Long, sourceId: String)
+  /** Добавляет слой, описанный JSON по спецификации Mapbox Style. */
+  fun addLayer(viewId: Long, layerJson: String, beforeLayerId: String?, callback: (Result<Unit>) -> Unit)
+  /** Убирает слой из стиля. */
+  fun removeLayer(viewId: Long, layerId: String)
+  /** Показывает или скрывает слой. */
+  fun setLayerVisibility(viewId: Long, layerId: String, visible: Boolean)
   /** Освобождает ресурсы карты. */
   fun dispose(viewId: Long)
 
@@ -1423,6 +1437,147 @@ interface VkMapsHostApi {
             val imageIdArg = args[1] as String
             val wrapped: List<Any?> = try {
               api.removeStyleImage(viewIdArg, imageIdArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.addGeoJsonSource$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val viewIdArg = args[0] as Long
+            val sourceIdArg = args[1] as String
+            val geoJsonArg = args[2] as String
+            api.addGeoJsonSource(viewIdArg, sourceIdArg, geoJsonArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(MessagesPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.setGeoJsonSourceData$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val viewIdArg = args[0] as Long
+            val sourceIdArg = args[1] as String
+            val geoJsonArg = args[2] as String
+            val wrapped: List<Any?> = try {
+              api.setGeoJsonSourceData(viewIdArg, sourceIdArg, geoJsonArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.addEncodedPolylineSource$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val viewIdArg = args[0] as Long
+            val sourceIdArg = args[1] as String
+            val polylineArg = args[2] as String
+            api.addEncodedPolylineSource(viewIdArg, sourceIdArg, polylineArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(MessagesPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.removeSource$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val viewIdArg = args[0] as Long
+            val sourceIdArg = args[1] as String
+            val wrapped: List<Any?> = try {
+              api.removeSource(viewIdArg, sourceIdArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.addLayer$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val viewIdArg = args[0] as Long
+            val layerJsonArg = args[1] as String
+            val beforeLayerIdArg = args[2] as String?
+            api.addLayer(viewIdArg, layerJsonArg, beforeLayerIdArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(MessagesPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.removeLayer$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val viewIdArg = args[0] as Long
+            val layerIdArg = args[1] as String
+            val wrapped: List<Any?> = try {
+              api.removeLayer(viewIdArg, layerIdArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.setLayerVisibility$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val viewIdArg = args[0] as Long
+            val layerIdArg = args[1] as String
+            val visibleArg = args[2] as Boolean
+            val wrapped: List<Any?> = try {
+              api.setLayerVisibility(viewIdArg, layerIdArg, visibleArg)
               listOf(null)
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)

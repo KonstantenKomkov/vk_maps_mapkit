@@ -123,6 +123,41 @@ abstract base class VkMapsPlatform extends PlatformInterface {
   /// Убирает изображение из стиля карты.
   Future<void> removeStyleImage(int viewId, String imageId);
 
+  /// Добавляет в стиль источник данных GeoJSON.
+  Future<void> addGeoJsonSource(int viewId, String sourceId, String geoJson);
+
+  /// Заменяет данные источника GeoJSON.
+  Future<void> setGeoJsonSourceData(
+    int viewId,
+    String sourceId,
+    String geoJson,
+  );
+
+  /// Добавляет источник из закодированной ломаной маршрута.
+  Future<void> addEncodedPolylineSource(
+    int viewId,
+    String sourceId,
+    String polyline,
+  );
+
+  /// Убирает источник из стиля.
+  Future<void> removeSource(int viewId, String sourceId);
+
+  /// Добавляет слой, описанный по спецификации Mapbox Style.
+  ///
+  /// [beforeLayerId] позволяет вставить слой под уже существующий.
+  Future<void> addLayer(
+    int viewId,
+    VkStyleLayer layer, {
+    String? beforeLayerId,
+  });
+
+  /// Убирает слой из стиля.
+  Future<void> removeLayer(int viewId, String layerId);
+
+  /// Показывает или скрывает слой.
+  Future<void> setLayerVisibility(int viewId, String layerId, bool visible);
+
   /// Освобождает ресурсы карты.
   Future<void> dispose(int viewId);
 

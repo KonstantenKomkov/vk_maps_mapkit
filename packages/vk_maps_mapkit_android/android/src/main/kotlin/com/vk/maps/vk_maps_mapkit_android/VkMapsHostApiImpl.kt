@@ -136,6 +136,64 @@ internal class VkMapsHostApiImpl(private val registry: VkMapViewRegistry) : VkMa
     )
   }
 
+  override fun addGeoJsonSource(
+    viewId: Long,
+    sourceId: String,
+    geoJson: String,
+    callback: (Result<Unit>) -> Unit,
+  ) {
+    callback(runCatching { registry.require(viewId).addGeoJsonSource(sourceId, geoJson) })
+  }
+
+  override fun setGeoJsonSourceData(viewId: Long, sourceId: String, geoJson: String) {
+    registry.require(viewId).setGeoJsonSourceData(sourceId, geoJson)
+  }
+
+  override fun addEncodedPolylineSource(
+    viewId: Long,
+    sourceId: String,
+    polyline: String,
+    callback: (Result<Unit>) -> Unit,
+  ) {
+    callback(runCatching { registry.require(viewId).addEncodedPolylineSource(sourceId, polyline) })
+  }
+
+  override fun removeSource(viewId: Long, sourceId: String) {
+    registry.require(viewId).removeSource(sourceId)
+  }
+
+  override fun addLayer(
+    viewId: Long,
+    layerJson: String,
+    beforeLayerId: String?,
+    callback: (Result<Unit>) -> Unit,
+  ) {
+    // Документация Android SDK описывает addLayer(layer: Layer), но не
+    // раскрывает структуру Layer, поэтому собрать слой из JSON нельзя.
+    // Вопрос задан вендору; до ответа метод честно отказывает.
+    callback(
+      Result.failure(
+        FlutterError(
+          "unsupported",
+          "Слои стиля на Android недоступны: структура Layer не описана в документации",
+          null,
+        )
+      )
+    )
+  }
+
+  override fun removeLayer(viewId: Long, layerId: String) {
+    registry.require(viewId).removeLayer(layerId)
+  }
+
+  override fun setLayerVisibility(viewId: Long, layerId: String, visible: Boolean) {
+    throw FlutterError(
+      "unsupported",
+      "Управление видимостью слоёв на Android недоступно",
+      null,
+    )
+  }
+
   override fun dispose(viewId: Long) {
     registry.remove(viewId)
   }

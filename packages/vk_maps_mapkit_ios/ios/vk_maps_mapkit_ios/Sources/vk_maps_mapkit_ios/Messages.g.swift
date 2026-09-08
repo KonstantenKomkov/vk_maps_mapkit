@@ -1075,6 +1075,20 @@ protocol VkMapsHostApi {
   func addStyleImage(viewId: Int64, imageId: String, pngBytes: FlutterStandardTypedData, scale: Double, completion: @escaping (Result<Void, Error>) -> Void)
   /// Убирает изображение из стиля.
   func removeStyleImage(viewId: Int64, imageId: String) throws
+  /// Добавляет в стиль источник данных GeoJSON.
+  func addGeoJsonSource(viewId: Int64, sourceId: String, geoJson: String, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Заменяет данные источника GeoJSON.
+  func setGeoJsonSourceData(viewId: Int64, sourceId: String, geoJson: String) throws
+  /// Добавляет источник из закодированной ломаной маршрута.
+  func addEncodedPolylineSource(viewId: Int64, sourceId: String, polyline: String, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Убирает источник из стиля.
+  func removeSource(viewId: Int64, sourceId: String) throws
+  /// Добавляет слой, описанный JSON по спецификации Mapbox Style.
+  func addLayer(viewId: Int64, layerJson: String, beforeLayerId: String?, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Убирает слой из стиля.
+  func removeLayer(viewId: Int64, layerId: String) throws
+  /// Показывает или скрывает слой.
+  func setLayerVisibility(viewId: Int64, layerId: String, visible: Bool) throws
   /// Освобождает ресурсы карты.
   func dispose(viewId: Int64) throws
 }
@@ -1341,6 +1355,136 @@ class VkMapsHostApiSetup {
       }
     } else {
       removeStyleImageChannel.setMessageHandler(nil)
+    }
+    /// Добавляет в стиль источник данных GeoJSON.
+    let addGeoJsonSourceChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.addGeoJsonSource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      addGeoJsonSourceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let viewIdArg = args[0] as! Int64
+        let sourceIdArg = args[1] as! String
+        let geoJsonArg = args[2] as! String
+        api.addGeoJsonSource(viewId: viewIdArg, sourceId: sourceIdArg, geoJson: geoJsonArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      addGeoJsonSourceChannel.setMessageHandler(nil)
+    }
+    /// Заменяет данные источника GeoJSON.
+    let setGeoJsonSourceDataChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.setGeoJsonSourceData\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setGeoJsonSourceDataChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let viewIdArg = args[0] as! Int64
+        let sourceIdArg = args[1] as! String
+        let geoJsonArg = args[2] as! String
+        do {
+          try api.setGeoJsonSourceData(viewId: viewIdArg, sourceId: sourceIdArg, geoJson: geoJsonArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      setGeoJsonSourceDataChannel.setMessageHandler(nil)
+    }
+    /// Добавляет источник из закодированной ломаной маршрута.
+    let addEncodedPolylineSourceChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.addEncodedPolylineSource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      addEncodedPolylineSourceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let viewIdArg = args[0] as! Int64
+        let sourceIdArg = args[1] as! String
+        let polylineArg = args[2] as! String
+        api.addEncodedPolylineSource(viewId: viewIdArg, sourceId: sourceIdArg, polyline: polylineArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      addEncodedPolylineSourceChannel.setMessageHandler(nil)
+    }
+    /// Убирает источник из стиля.
+    let removeSourceChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.removeSource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      removeSourceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let viewIdArg = args[0] as! Int64
+        let sourceIdArg = args[1] as! String
+        do {
+          try api.removeSource(viewId: viewIdArg, sourceId: sourceIdArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      removeSourceChannel.setMessageHandler(nil)
+    }
+    /// Добавляет слой, описанный JSON по спецификации Mapbox Style.
+    let addLayerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.addLayer\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      addLayerChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let viewIdArg = args[0] as! Int64
+        let layerJsonArg = args[1] as! String
+        let beforeLayerIdArg: String? = nilOrValue(args[2])
+        api.addLayer(viewId: viewIdArg, layerJson: layerJsonArg, beforeLayerId: beforeLayerIdArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      addLayerChannel.setMessageHandler(nil)
+    }
+    /// Убирает слой из стиля.
+    let removeLayerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.removeLayer\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      removeLayerChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let viewIdArg = args[0] as! Int64
+        let layerIdArg = args[1] as! String
+        do {
+          try api.removeLayer(viewId: viewIdArg, layerId: layerIdArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      removeLayerChannel.setMessageHandler(nil)
+    }
+    /// Показывает или скрывает слой.
+    let setLayerVisibilityChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.setLayerVisibility\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setLayerVisibilityChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let viewIdArg = args[0] as! Int64
+        let layerIdArg = args[1] as! String
+        let visibleArg = args[2] as! Bool
+        do {
+          try api.setLayerVisibility(viewId: viewIdArg, layerId: layerIdArg, visible: visibleArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      setLayerVisibilityChannel.setMessageHandler(nil)
     }
     /// Освобождает ресурсы карты.
     let disposeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.dispose\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)

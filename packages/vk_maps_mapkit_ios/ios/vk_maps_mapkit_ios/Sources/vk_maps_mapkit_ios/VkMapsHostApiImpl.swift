@@ -159,6 +159,59 @@ final class VkMapsHostApiImpl: VkMapsHostApi {
     try registry.view(id: viewId).removeStyleImage(imageId: imageId)
   }
 
+  func addGeoJsonSource(
+    viewId: Int64,
+    sourceId: String,
+    geoJson: String,
+    completion: @escaping (Result<Void, Error>) -> Void
+  ) {
+    completion(Result { try registry.view(id: viewId).addGeoJsonSource(sourceId: sourceId, geoJson: geoJson) })
+  }
+
+  func setGeoJsonSourceData(
+    viewId: Int64,
+    sourceId: String,
+    geoJson: String
+  ) throws {
+    try registry.view(id: viewId)
+      .setGeoJsonSourceData(sourceId: sourceId, geoJson: geoJson)
+  }
+
+  func addEncodedPolylineSource(
+    viewId: Int64,
+    sourceId: String,
+    polyline: String,
+    completion: @escaping (Result<Void, Error>) -> Void
+  ) {
+    completion(Result { try registry.view(id: viewId).addEncodedPolylineSource(sourceId: sourceId, polyline: polyline) })
+  }
+
+  func removeSource(viewId: Int64, sourceId: String) throws {
+    try registry.view(id: viewId).removeSource(sourceId: sourceId)
+  }
+
+  func addLayer(
+    viewId: Int64,
+    layerJson: String,
+    beforeLayerId: String?,
+    completion: @escaping (Result<Void, Error>) -> Void
+  ) {
+    completion(Result { try registry.view(id: viewId).addLayer(layerJson: layerJson, beforeLayerId: beforeLayerId) })
+  }
+
+  func removeLayer(viewId: Int64, layerId: String) throws {
+    try registry.view(id: viewId).removeLayer(layerId: layerId)
+  }
+
+  func setLayerVisibility(
+    viewId: Int64,
+    layerId: String,
+    visible: Bool
+  ) throws {
+    try registry.view(id: viewId)
+      .setLayerVisibility(layerId: layerId, visible: visible)
+  }
+
   func dispose(viewId: Int64) throws {
     registry.remove(id: viewId)
   }

@@ -120,4 +120,149 @@ class VkMapController {
   /// Убирает изображение из стиля карты.
   Future<void> removeStyleImage(String imageId) =>
       _platform.removeStyleImage(viewId, imageId);
+
+  /// Добавляет в стиль источник данных GeoJSON.
+  Future<void> addGeoJsonSource(String sourceId, String geoJson) =>
+      _platform.addGeoJsonSource(viewId, sourceId, geoJson);
+
+  /// Заменяет данные источника GeoJSON, не пересоздавая его.
+  Future<void> setGeoJsonSourceData(String sourceId, String geoJson) =>
+      _platform.setGeoJsonSourceData(viewId, sourceId, geoJson);
+
+  /// Добавляет источник из закодированной ломаной маршрута.
+  ///
+  /// Строку отдаёт `vk_maps_api` в поле `shape` участка маршрута.
+  Future<void> addEncodedPolylineSource(String sourceId, String polyline) =>
+      _platform.addEncodedPolylineSource(viewId, sourceId, polyline);
+
+  /// Убирает источник из стиля.
+  Future<void> removeSource(String sourceId) =>
+      _platform.removeSource(viewId, sourceId);
+
+  /// Добавляет слой стиля.
+  ///
+  /// [beforeLayerId] вставляет слой под уже существующий: так линия
+  /// маршрута кладётся под подписи, а не поверх них.
+  Future<void> addLayer(VkStyleLayer layer, {String? beforeLayerId}) =>
+      _platform.addLayer(viewId, layer, beforeLayerId: beforeLayerId);
+
+  /// Убирает слой из стиля.
+  Future<void> removeLayer(String layerId) =>
+      _platform.removeLayer(viewId, layerId);
+
+  /// Показывает или скрывает слой.
+  Future<void> setLayerVisibility(String layerId, {required bool visible}) =>
+      _platform.setLayerVisibility(viewId, layerId, visible);
+
+  /// Рисует маршрут по закодированной ломаной.
+  ///
+  /// Создаёт источник и линию одним вызовом; повторный вызов с тем же [id]
+  /// заменяет геометрию, не пересоздавая слой.
+  Future<void> drawRoute(
+    String encodedPolyline, {
+    String id = 'route',
+    String color = '#0077FF',
+    double width = 6,
+    double opacity = 1,
+    String? beforeLayerId,
+  }) async {
+    final String sourceId = '$id-source';
+    if (_drawnIds.add(id)) {
+      await addEncodedPolylineSource(sourceId, encodedPolyline);
+      await addLayer(
+        VkStyleLayer.line(
+          id: id,
+          sourceId: sourceId,
+          paint: <String, Object?>{
+            'line-color': color,
+            'line-width': width,
+            'line-opacity': opacity,
+          },
+          layout: <String, Object?>{'line-cap': 'round', 'line-join': 'round'},
+        ),
+        beforeLayerId: beforeLayerId,
+      );
+    } else {
+      await _platform.addEncodedPolylineSource(
+        viewId,
+        sourceId,
+        encodedPolyline,
+      );
+    }
+  }
+
+  /// Рисует многоугольник по списку точек.
+  Future<void> drawPolygon(
+    List<VkLatLon> points, {
+    String id = 'polygon',
+    String fillColor = '#0077FF',
+    double fillOpacity = 0.2,
+    String? outlineColor,
+    String? beforeLayerId,
+  }) => _drawGeoJson(
+    id: id,
+    geoJson: VkGeoJson.polygon(points),
+    layer: VkStyleLayer.fill(
+      id: id,
+      sourceId: '$id-source',
+      paint: <String, Object?>{
+        'fill-color': fillColor,
+        'fill-opacity': fillOpacity,
+        'fill-outline-color': ?outlineColor,
+      },
+    ),
+    beforeLayerId: beforeLayerId,
+  );
+
+  /// Рисует круг заданного радиуса в метрах.
+  ///
+  /// Круг приближается многоугольником на стороне Dart: нативного круга нет
+  /// ни на одной платформе, а так результат одинаков.
+  Future<void> drawCircle(
+    VkLatLon center,
+    double radiusMeters, {
+    String id = 'circle',
+    int steps = 64,
+    String fillColor = '#0077FF',
+    double fillOpacity = 0.2,
+    String? beforeLayerId,
+  }) => _drawGeoJson(
+    id: id,
+    geoJson: VkGeoJson.circle(center, radiusMeters, steps: steps),
+    layer: VkStyleLayer.fill(
+      id: id,
+      sourceId: '$id-source',
+      paint: <String, Object?>{
+        'fill-color': fillColor,
+        'fill-opacity': fillOpacity,
+      },
+    ),
+    beforeLayerId: beforeLayerId,
+  );
+
+  /// Убирает нарисованный рецептом объект вместе с его источником.
+  Future<void> removeDrawing(String id) async {
+    if (!_drawnIds.remove(id)) {
+      return;
+    }
+    await removeLayer(id);
+    await removeSource('$id-source');
+  }
+
+  Future<void> _drawGeoJson({
+    required String id,
+    required String geoJson,
+    required VkStyleLayer layer,
+    String? beforeLayerId,
+  }) async {
+    final String sourceId = '$id-source';
+    if (_drawnIds.add(id)) {
+      await addGeoJsonSource(sourceId, geoJson);
+      await addLayer(layer, beforeLayerId: beforeLayerId);
+    } else {
+      await setGeoJsonSourceData(sourceId, geoJson);
+    }
+  }
+
+  final Set<String> _drawnIds = <String>{};
 }
