@@ -1,3 +1,8 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.vk.maps.vk_maps_mapkit_android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Карте нужен доступ в сеть для загрузки тайлов и стилей. -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <!--
+    Разрешения на геолокацию плагин намеренно не объявляет: позицию
+    пользователя передаёт приложение, оно же и запрашивает разрешения.
+  -->
 </manifest>

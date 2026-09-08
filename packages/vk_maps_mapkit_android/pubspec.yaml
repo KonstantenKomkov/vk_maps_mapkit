@@ -13,6 +13,7 @@ flutter:
     implements: vk_maps_mapkit
     platforms:
       android:
+        dartPluginClass: VkMapsAndroid
         package: com.vk.maps.vk_maps_mapkit_android
         pluginClass: VkMapsMapkitAndroidPlugin
 
