@@ -1,0 +1,33 @@
+name: vk_maps_mapkit_ios
+description: iOS-реализация плагина vk_maps_mapkit поверх нативного SDK VK Карт.
+version: 0.1.0
+repository: https://github.com/KonstantenKomkov/vk_maps_mapkit/tree/main/packages/vk_maps_mapkit_ios
+issue_tracker: https://github.com/KonstantenKomkov/vk_maps_mapkit/issues
+
+environment:
+  flutter: ">=3.35.0"
+  sdk: ^3.9.0
+
+flutter:
+  plugin:
+    implements: vk_maps_mapkit
+    platforms:
+      ios:
+        pluginClass: VkMapsMapkitIosPlugin
+        sharedDarwinSource: false
+
+dependencies:
+  flutter:
+    sdk: flutter
+  vk_maps_mapkit_platform_interface: ^0.1.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+topics:
+  - vk
+  - maps
+  - map
+  - geo

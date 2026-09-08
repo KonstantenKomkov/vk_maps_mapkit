@@ -1,0 +1,12 @@
+# Локальная связка пакетов на время разработки.
+dependency_overrides:
+  vk_maps_api:
+    path: ../../vk_maps_api
+  vk_maps_mapkit:
+    path: ..
+  vk_maps_mapkit_android:
+    path: ../../vk_maps_mapkit_android
+  vk_maps_mapkit_ios:
+    path: ../../vk_maps_mapkit_ios
+  vk_maps_mapkit_platform_interface:
+    path: ../../vk_maps_mapkit_platform_interface
