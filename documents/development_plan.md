@@ -125,7 +125,45 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 3. Этап 0 — доступы, проверка артефактов и решение по SDK
+## 3. Что заимствуем у пакетов-конкурентов
+
+Разобраны два пакета: [`yandex/yandex_maps_mapkit`](https://github.com/yandex/yandex_maps_mapkit) 4.42.0 — обёртка
+над нативным MapKit, ровно тот же класс задачи, и
+[`google_maps_flutter`](https://github.com/flutter/packages/tree/main/packages/google_maps_flutter) — эталонный
+federated-плагин от команды Flutter. Ниже — только то, что берём, с указанием этапа.
+
+| Что берём | Где подсмотрено | Куда |
+| --- | --- | --- |
+| Декларативные наборы объектов вместо императивных `add`/`remove` | `GoogleMap(markers: Set<Marker>, polylines: …)` | этап 5 |
+| Диффы: `MapsObjectUpdates.from(previous, current)` → `objectsToAdd` / `objectsToChange` / `objectIdsToRemove`, в натив уходит только дельта | `maps_object_updates.dart`, по тесту на каждый тип объекта | этапы 5, 6 |
+| Дельта конфигурации: `MapConfiguration.diffFrom(prev)`, пустой апдейт не уходит в натив | `_updateOptions` в `google_map.dart` | этап 5 |
+| Фейковая платформа для тестов фасада без устройства | `test/fake_google_maps_flutter_platform.dart` | этап 5 |
+| Раскладка `platform_interface`: `src/types`, `src/events`, `src/platform_interface`, `src/method_channel` | `google_maps_flutter_platform_interface` | этапы 1, 2 |
+| `@ConfigurePigeon(PigeonOptions(dartOut:…, kotlinOut:…, copyrightHeader:))` в `pigeons/messages.dart` | оба платформенных пакета Google | этап 2 |
+| `false_secrets` в pubspec для example с демо-ключом, `issue_tracker`, `topics` | `google_maps_flutter/pubspec.yaml` | этап 9 |
+| Раскладка SPM: `ios/<пакет>.podspec` и `ios/<пакет>/Package.swift` с `Sources/` рядом | `yandex_maps_mapkit` (у `google_maps_flutter_ios` SPM ещё нет) | этап 4 |
+| Режим platform view — параметр виджета, а не хардкод: `PlatformViewType { Hybrid, Virtual, TextureHybrid, Compat }` | `platform_view_type.dart` | этап 5 |
+| Проброс `gestureRecognizers` и `hitTestBehavior` из виджета в platform view | `platform_view_widget.dart` | этап 5 |
+| Явный жизненный цикл SDK: `onStart()` / `onStop()` + `flutter_plugin_android_lifecycle` | `mapkit.dart`, pubspec Яндекса | этапы 3, 5 |
+| Идемпотентная инициализация одним вызовом: `initMapkit(apiKey:, locale:, userId:, options:)`, повторный вызов не переинициализирует | `bindings/init.dart` | этап 5 |
+
+Опорные версии Android-обвязки у Яндекса (полезно как точка в матрице KGP): AGP 8.6.0, KGP 2.0.21, JDK 21,
+`compileSdk 35`, `minSdk 26`, нативная зависимость подключена как `api`, а не `implementation`.
+
+**Что рассмотрено и отвергнуто.** Яндекс генерирует Dart-биндинги поверх `dart:ffi` — 1199 файлов в `lib/`,
+собственный кодоген на `build_runner` (`weak_interfaces_meta_generator`, `container_generator`). Это оправдано при
+их размере SDK и наличии IDL. У VK Карт публичного IDL нет, поверхность на порядок меньше, а FFI тянет за собой
+ручное управление памятью и изоляты. Остаёмся на Pigeon (правило 2 раздела 2).
+
+**Решения, которые надо принять явно и записать в `docs/design-decisions.md`:**
+1. Pigeon-контракт общий в `platform_interface` (как задумано) против отдельного `pigeons/messages.dart` в каждом
+   платформенном пакете (как у Google — это позволяет платформам расходиться в возможностях).
+2. `api` против `implementation` для нативной зависимости в Gradle: `api` открывает приложению нативные типы VK
+   (гибкость для сложных кейсов), `implementation` держит SDK за фасадом и не ломает пользователя при смене версии.
+
+---
+
+## 4. Этап 0 — доступы, проверка артефактов и решение по SDK
 
 **Приоритет:** P0.
 **Сложность:** M.
@@ -159,7 +197,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 4. Этап 1 — скелет монорепозитория
+## 5. Этап 1 — скелет монорепозитория
 
 **Приоритет:** P0.
 **Сложность:** M.
@@ -188,7 +226,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 5. Этап 2 — контракт: `platform_interface` и Pigeon
+## 6. Этап 2 — контракт: `platform_interface` и Pigeon
 
 **Приоритет:** P0.
 **Сложность:** L.
@@ -214,6 +252,10 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 4. Кодоген: `make gen` → `lib/src/generated/vk_maps.g.dart`, `android/.../VkMaps.g.kt`, `ios/.../VkMaps.g.swift`
    в соответствующих пакетах. Сгенерированные файлы коммитятся.
 5. Тесты моделей (равенство, `toString`, границы zoom 0…22, pitch, bearing 0…360) и тест токена платформы.
+6. Раскладка пакета — как в `google_maps_flutter_platform_interface`: `src/types` (модели), `src/events` (события),
+   `src/platform_interface` (абстракция), `src/method_channel` (реализация по умолчанию). Решение «общий контракт
+   против `pigeons/messages.dart` на каждый платформенный пакет» принять явно и записать в `docs/design-decisions.md`
+   (см. раздел 3).
 
 ### Критерии готовности
 
@@ -223,7 +265,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 6. Этап 3 — Android
+## 7. Этап 3 — Android
 
 **Приоритет:** P0.
 **Сложность:** XL.
@@ -254,7 +296,10 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
    приложением, а в плагине фиксируется только минимально поддерживаемая. Составить и держать в
    `docs/platform-matrix.md` матрицу совместимости AGP × KGP × Gradle × JDK (минимум: KGP 1.9.x и 2.x, AGP 8.x,
    Gradle 8.x, JDK 17) и прогонять сборку example по её углам. `build.gradle.kts` в примере — как отдельная
-   проверка, что Kotlin DSL у потребителя не ломается.
+   проверка, что Kotlin DSL у потребителя не ломается. Опорная точка — обвязка Яндекса: AGP 8.6.0, KGP 2.0.21,
+   JDK 21, `compileSdk 35`.
+8. Жизненный цикл активити через `flutter_plugin_android_lifecycle`: карта освобождает ресурсы и глушит сетевые
+   запросы в фоне, возобновляет при возврате (у Яндекса это вынесено в явные `onStart`/`onStop`).
 
 ### Критерии готовности
 
@@ -266,7 +311,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 7. Этап 4 — iOS
+## 8. Этап 4 — iOS
 
 **Приоритет:** P0.
 **Сложность:** XL.
@@ -287,7 +332,9 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 4. `MapViewDelegate` → `VkMapsFlutterApi`: `didReceiveEvent`, `willChangeModeTo`, `didChangeModeTo`, `didFailWithError`.
 5. Жизненный цикл: освобождение `MapView` в `deinit`, память при нескольких картах, background/foreground.
 6. **Поддержка SPM (Swift Package Manager).** Плагин публикуется в двух режимах подключения одновременно:
-   CocoaPods (`.podspec`) и SPM (`ios/vk_maps_flutter_ios/Package.swift` в раскладке, которую ищет Flutter).
+   CocoaPods (`.podspec`) и SPM (`ios/vk_maps_flutter_ios/Package.swift` в раскладке, которую ищет Flutter:
+   подспек в `ios/`, рядом каталог пакета с `Package.swift` и `Sources/<имя>/*.swift` — как сделано в
+   `yandex_maps_mapkit`; у `google_maps_flutter_ios` SPM пока нет, поэтому образец берём у Яндекса).
    Зависимость на SDK в SPM-режиме — пакет `maps-mailru/vk-maps-distribution`, в CocoaPods-режиме — под
    `VKMapsSDK`; версия SDK задаётся в одном месте и не расходится между режимами. Проверять оба пути:
    `flutter config --enable-swift-package-manager` и сборку с выключенным SPM (fallback на pods), плюс
@@ -302,7 +349,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 8. Этап 5 — Dart-фасад: виджет, контроллер, события, маркеры
+## 9. Этап 5 — Dart-фасад: виджет, контроллер, события, маркеры
 
 **Приоритет:** P0.
 **Сложность:** L.
@@ -311,8 +358,12 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ### Задачи
 
-1. `VkMap` — `StatefulWidget` с `AndroidView`/`UiKitView` (hybrid composition на Android), параметры: `configuration`,
-   `onMapCreated(VkMapController)`, `initialCameraPosition`, `style`, `gestureRecognizers`, флаги controls и жестов.
+1. `VkMap` — `StatefulWidget` с `AndroidView`/`UiKitView`, параметры: `configuration`,
+   `onMapCreated(VkMapController)`, `initialCameraPosition`, `style`, `gestureRecognizers`, `hitTestBehavior`,
+   флаги controls и жестов, плюс `platformViewType` (`hybrid` / `virtual` / `textureHybrid` / `compat`,
+   по умолчанию `compat`) — режим композиции выбирает приложение, а не плагин (как у Яндекса).
+   Объекты карты задаются декларативно наборами: `markers: Set<VkMarker>`, дальше `polylines`, `polygons`, `circles`
+   по мере поддержки (как `GoogleMap`), а не только императивными методами контроллера.
 2. `VkMapController`: `camera` (`flyTo`, `easeTo`, `jumpTo`, `fitBounds`, `setZoom/Bearing/Pitch/Padding`, `zoomIn/Out`,
    `getCameraPosition`, `getVisibleBounds`, проекции `toScreen`/`fromScreen`, `metersPerPoint`), `markers`
    (`add`, `addAll`, `remove`, `removeAll`, `update`), `userLocation` (`set`, `setBearing`, `visible`), `mode`
@@ -320,16 +371,26 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 3. Потоки событий: `Stream<MapEvent> events`, типизированные `onTap`, `onLongTap`, `onMarkerTap`, `onCameraMove`,
    `onCameraIdle`, `onStyleLoaded`, `onError`. Диспетчер по `viewId` в `platform_interface`.
 4. Стратегия ошибок: `VkMapsException` с кодом и платформенным сообщением; `PlatformException` не протекает наружу.
-5. Widget-тесты с фейковым `VkMapsPlatform` (регистрация карты, доставка событий, dispose снимает подписки).
+5. Диффы вместо полной перезаливки: `VkMapsObjectUpdates.from(previous, current)` считает
+   `objectsToAdd` / `objectsToChange` / `objectIdsToRemove`, в натив уходит только дельта; `didUpdateWidget`
+   пересчитывает и наборы объектов, и конфигурацию (`VkMapConfiguration.diffFrom`), пустой апдейт не отправляется.
+   Тест на диффы — отдельным файлом на каждый тип объекта (как у Google).
+6. Инициализация SDK: `VkMaps.init(apiKey:, locale:, options:)` до первой карты, идемпотентная — повторный вызов
+   не переинициализирует нативный SDK и не роняет приложение (как `initMapkit` у Яндекса).
+7. Жизненный цикл: карта останавливает рендер и сетевые запросы, когда приложение уходит в фон, и возобновляет при
+   возврате (`onStart`/`onStop` нативного SDK, на Android — через `flutter_plugin_android_lifecycle`).
+8. Widget-тесты с фейковым `VkMapsPlatform` (регистрация карты, доставка событий, dispose снимает подписки).
 
 ### Критерии готовности
 
 - Публичный API фасада документирован dartdoc-комментариями; `dart doc` без предупреждений.
 - Widget-тесты покрывают жизненный цикл и маршрутизацию событий для двух одновременных карт.
+- Тесты диффов: добавление, изменение и удаление объекта дают ровно один вызов моста с ожидаемой дельтой;
+  повторная сборка виджета с теми же наборами не даёт вызовов вообще.
 
 ---
 
-## 9. Этап 6 — стили, источники, слои, изображения
+## 10. Этап 6 — стили, источники, слои, изображения
 
 **Приоритет:** P1.
 **Сложность:** L.
@@ -359,7 +420,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 10. Этап 7 — `vk_maps_api`: REST-клиент на чистом Dart
+## 11. Этап 7 — `vk_maps_api`: REST-клиент на чистом Dart
 
 **Приоритет:** P1.
 **Сложность:** L.
@@ -397,7 +458,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 11. Этап 8 — example-приложение и живая проверка
+## 12. Этап 8 — example-приложение и живая проверка
 
 **Приоритет:** P0.
 **Сложность:** L.
@@ -423,7 +484,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 12. Этап 9 — документация и публикация 0.1.0
+## 13. Этап 9 — документация и публикация 0.1.0
 
 **Приоритет:** P1.
 **Сложность:** M.
@@ -436,7 +497,9 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
    (Maven-репозиторий и `pickFirsts` в `build.gradle` приложения, `Podfile`, минимальные версии), получение ключа,
    пример карты, пример REST, «если карта не появилась», ссылка на EULA SDK.
 2. `docs/publishing.md`: порядок `platform_interface → api → android → ios → vk_maps_flutter`, чек-лист (changelog,
-   версия, dry-run, `topics`, отсутствие секретов в архиве).
+   версия, dry-run, `topics`, отсутствие секретов в архиве). В pubspec каждого пакета — `repository`,
+   `issue_tracker`, `topics`; если в example останется демо-ключ, объявить его в `false_secrets` (как в
+   `google_maps_flutter`), а не прятать.
 3. `docs/platform-matrix.md` финальный: версии SDK, minSdk/iOS, что «только одна платформа», что на Dart.
 4. Публикация `0.1.0` всех пяти пакетов; git-тег `v0.1.0`; ограничения ниже `1.0.0` до закрытия `docs/status.md`.
 
@@ -447,7 +510,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ---
 
-## 13. Рекомендуемая последовательность задач
+## 14. Рекомендуемая последовательность задач
 
 | № | Задача | Приоритет | Сложность | Зависимость |
 | --- | --- | --- | --- | --- |
@@ -469,7 +532,7 @@ iOS (4) идёт раньше Android (5), потому что iOS-артефа�
 
 ---
 
-## 14. Общие проверки после каждого этапа
+## 15. Общие проверки после каждого этапа
 
 ```shell
 make format
@@ -487,7 +550,7 @@ make check          # + dart pub publish --dry-run
 
 ---
 
-## 15. Итоговые критерии плана
+## 16. Итоговые критерии плана
 
 - Приложение на Flutter показывает карту VK Карт на Android и iOS через нативный SDK одной строкой `VkMap(...)`.
 - Камера, маркеры, стили, GeoJSON/polyline-слои, изображения, режим следования и события покрыты Dart-API и
@@ -498,7 +561,7 @@ make check          # + dart pub publish --dry-run
 
 ---
 
-## 16. Вне рамок плана
+## 17. Вне рамок плана
 
 - Web-реализация через JS SDK `mmr-gl` — отдельный план после 0.1.0 (Mapbox GL JS-подобный API, `package:web`).
 - macOS/desktop (SDK заявляет macOS 12+, Flutter-мост не проверялся).
@@ -510,7 +573,7 @@ make check          # + dart pub publish --dry-run
 
 ---
 
-## 17. Прогресс
+## 18. Прогресс
 
 - [ ] Этап 0 — доступы, артефакты, решение по SDK
 - [ ] Этап 1 — скелет монорепозитория
@@ -528,4 +591,6 @@ make check          # + dart pub publish --dry-run
 **Последнее обновление:** 8 сентября 2026 — план составлен по итогам чтения 45 страниц документации VK Карт и DocC
 нативного SDK; зафиксировано решение строить обёртку на нативных пакетах (`VKMapsSDK`, `com.vk.maps:maps-native-sdk`)
 по их документации, а не на legacy WebView-SDK и не на сторонних плагинах. Уточнено: выкладка VK переехала с
-Artifactory на Nexus (`nexus-external.vkteam.ru`), Android-артефакты в публичной части не найдены.
+Artifactory на Nexus (`nexus-external.vkteam.ru`), Android-артефакты в публичной части не найдены. Добавлены
+обязательные пункты про SPM (iOS) и KGP (Android), а также раздел 3 — что заимствуем у `yandex_maps_mapkit` и
+`google_maps_flutter`.
