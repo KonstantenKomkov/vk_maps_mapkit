@@ -141,8 +141,9 @@ federated-плагин от команды Flutter. Ниже — только т
 | Раскладка `platform_interface`: `src/types`, `src/events`, `src/platform_interface`, `src/method_channel` | `google_maps_flutter_platform_interface` | этапы 1, 2 |
 | `@ConfigurePigeon(PigeonOptions(dartOut:…, kotlinOut:…, copyrightHeader:))` в `pigeons/messages.dart` | оба платформенных пакета Google | этап 2 |
 | `false_secrets` в pubspec для example с демо-ключом, `issue_tracker`, `topics` | `google_maps_flutter/pubspec.yaml` | этап 9 |
-| Раскладка каталогов под SPM: `ios/<пакет>.podspec` + `ios/<пакет>/Sources/<пакет>/`, подспек ссылается внутрь | `google_maps_flutter_ios` (сделана раскладка, но `Package.swift` нет — SPM ещё не включён) | этап 4 |
-| Сам `Package.swift` в этой раскладке: зависимость на SDK, `linkerSettings`, продукт-библиотека | `yandex_maps_mapkit` — единственный из двух, у кого SPM реально работает | этап 4 |
+| Раскладка каталогов под SPM: `ios/<пакет>.podspec` + `ios/<пакет>/Sources/<пакет>/`, подспек ссылается внутрь | `google_maps_flutter_ios` | этап 4 |
+| `Package.swift` рядом с подспеком: продукт-библиотека, зависимость на SDK, ресурсы, `linkerSettings` | `google_maps_flutter_ios_sdk9`/`sdk10` и `yandex_maps_mapkit` | этап 4 |
+| Разведение различий между двумя режимами через флаг компиляции (`GCC_PREPROCESSOR_DEFINITIONS = FGM_USING_COCOAPODS=1`) — имена фреймворков в CocoaPods и SPM не совпадают | подспек `google_maps_flutter_ios_sdk10` | этап 4 |
 | Режим platform view — параметр виджета, а не хардкод: `PlatformViewType { Hybrid, Virtual, TextureHybrid, Compat }` | `platform_view_type.dart` | этап 5 |
 | Проброс `gestureRecognizers` и `hitTestBehavior` из виджета в platform view | `platform_view_widget.dart` | этап 5 |
 | Явный жизненный цикл SDK: `onStart()` / `onStop()` + `flutter_plugin_android_lifecycle` | `mapkit.dart`, pubspec Яндекса | этапы 3, 5 |
@@ -343,9 +344,10 @@ federated-плагин от команды Flutter. Ниже — только т
        Sources/vk_maps_flutter_ios/       # Swift-исходники, include/, Resources/
    ```
 
-   Каталоги в таком виде уже сделаны у `google_maps_flutter_ios` (но `Package.swift` там нет — SPM не включён),
-   а рабочий `Package.swift` в этой раскладке есть у `yandex_maps_mapkit`: продукт-библиотека, зависимость на
-   нативный SDK и `linkerSettings` с фреймворками. Берём раскладку у первого, содержимое `Package.swift` — у второго.
+   Раскладка каталогов — как в `google_maps_flutter_ios`; готовые `Package.swift` для образца — в
+   `google_maps_flutter_ios_sdk9`/`sdk10` и в `yandex_maps_mapkit`. Учесть, что имена фреймворков в двух режимах
+   различаются: Google разводит это флагом компиляции `FGM_USING_COCOAPODS=1` в подспеке. В `flutter/packages`
+   сейчас 19 `Package.swift` на 20 подспеков — двойное подключение стало нормой, а не исключением.
    Зависимость на SDK в SPM-режиме — пакет `maps-mailru/vk-maps-distribution`, в CocoaPods-режиме — под
    `VKMapsSDK`; версия SDK задаётся в одном месте и не расходится между режимами. Проверять оба пути:
    `flutter config --enable-swift-package-manager` и сборку с выключенным SPM (fallback на pods), плюс
