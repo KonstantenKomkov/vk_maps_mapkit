@@ -1,4 +1,4 @@
-# План разработки `vk_maps_flutter` — Flutter-обёртка над нативными SDK VK Карт
+# План разработки `vk_maps_mapkit` — Flutter-обёртка над нативными SDK VK Карт
 
 **Статус:** планируется.
 
@@ -103,13 +103,13 @@ GitHub-репозитории `maps-mailru/maps-sdk-ios` (legacy) и `maps-mailr
 Целевая структура репозитория:
 
 ```text
-vk_maps/
+vk_maps_mapkit/
   packages/
-    vk_maps_flutter/                     # фасад: VkMap widget, VkMapController, реэкспорт моделей
-    vk_maps_flutter_platform_interface/  # VkMapsPlatform, модели, pigeon-контракт (generated)
-    vk_maps_flutter_android/             # Kotlin: platform view + мост к com.vk.maps
-    vk_maps_flutter_ios/                 # Swift: platform view + мост к MapsNativeSDK (podspec + Package.swift)
-    vk_maps_api/                         # чистый Dart: REST-клиент, polyline-декодер, static map URL builder
+    vk_maps_mapkit/                     # фасад: VkMap widget, VkMapController, реэкспорт моделей
+    vk_maps_mapkit_platform_interface/  # VkMapsPlatform, модели, pigeon-контракт (generated)
+    vk_maps_mapkit_android/             # Kotlin: platform view + мост к com.vk.maps
+    vk_maps_mapkit_ios/                 # Swift: platform view + мост к MapsNativeSDK (podspec + Package.swift)
+    vk_maps_api/                        # чистый Dart: REST-клиент, polyline-декодер, static map URL builder
   tool/      bootstrap.sh, check.sh
   docs/      design-decisions.md, platform-matrix.md, publishing.md, status.md, questions-for-vendor.md
   documents/ development_plan.md, research/
@@ -207,15 +207,16 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 
 ### Задачи
 
-1. Разобраться с git: сейчас `vk_maps/` лежит внутри чужого репозитория `projects/.git` (`git rev-parse --show-toplevel`
-   → `projects`). Создать собственный `.git` в `vk_maps/`, `.gitignore` по образцу `apptracer_flutter`.
+1. ~~Разобраться с git~~ — сделано 8 сентября 2026: у каталога собственный `.git`, remote
+   `git@github.com:KonstantenKomkov/vk_maps_mapkit.git`, ветка `main`, `.gitignore` на месте. Каталог по-прежнему
+   лежит внутри чужого репозитория `projects/.git`, но вложенный `.git` его перекрывает.
 2. Создать пять пакетов через `flutter create --template=plugin` / `package` с `pubspec_overrides.yaml` для локальной
    связки (без melos, как в образце). Имена и `flutter.plugin.platforms` с `default_package` в фасаде.
 3. `tool/bootstrap.sh`, `tool/check.sh` (порядок: platform_interface → api → android → ios → фасад), `Makefile` с
    целями `bootstrap`, `check`, `format`, `analyze`, `test`, `gen` (pigeon), `example-android`, `example-ios`,
    `pod-install`, `tokens`.
 4. `.github/workflows/ci.yml` (matrix по пакетам, `--fatal-infos`, `publish --dry-run`) и `ios.yml` (macOS-раннер,
-   path-filter на `packages/vk_maps_flutter_ios/**`).
+   path-filter на `packages/vk_maps_mapkit_ios/**`).
 5. Общий `analysis_options.yaml` (`flutter_lints`), `LICENSE` (MIT для обёртки; EULA SDK — ссылкой в README), `CHANGELOG.md`
    в каждом пакете по Keep a Changelog, `README.md`/`README.en.md` с таблицей документов.
 6. `docs/status.md` — леджер «что проверено вживую», изначально всё «не проверено».
@@ -236,7 +237,7 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 
 ### Задачи
 
-1. Dart-модели в `vk_maps_flutter_platform_interface/lib/src/models/`: `LatLon`, `LatLonBounds`, `ViewPoint`,
+1. Dart-модели в `vk_maps_mapkit_platform_interface/lib/src/models/`: `LatLon`, `LatLonBounds`, `ViewPoint`,
    `MapPadding`, `CameraPosition` (center, zoom, bearing, pitch), `CameraOptions`, `AnimationOptions` (easing,
    duration), `CameraMovingReason`, `CameraMovingPhase`, `MapMode` (`free`, `followLocation`,
    `followBearingAndLocation`), `MapPredefinedStyle` (`simple`, `main`, `dark`, `navigationMain`, `navigationDark`,
@@ -278,8 +279,8 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
    `implementation "com.vk.maps:maps-native-sdk:$vkMapsSdkVersion"`, `packagingOptions.jniLibs.pickFirsts` для
    `libVkLayer_khronos_validation.so`, `res/values/styles.xml` с `MapSDKTheme`, `consumer-rules.pro`.
    Манифест: `INTERNET`; `ACCESS_*_LOCATION` — не объявлять в плагине, оставить приложению (документировать).
-2. `VkMapsFlutterPlugin` (`FlutterPlugin`, `ActivityAware`), `VkMapViewFactory` (`PlatformViewFactory`, viewType
-   `vk_maps_flutter/map`), `VkMapPlatformView` с `com.vk.maps.MapView(ContextThemeWrapper(context, R.style.MapSDKTheme))`,
+2. `VkMapsMapkitPlugin` (`FlutterPlugin`, `ActivityAware`), `VkMapViewFactory` (`PlatformViewFactory`, viewType
+   `vk_maps_mapkit/map`), `VkMapPlatformView` с `com.vk.maps.MapView(ContextThemeWrapper(context, R.style.MapSDKTheme))`,
    `applyConfig`, `RenderTarget.Texture`; `MapsSdk.setup` один раз на процесс.
 3. Реализация `VkMapsHostApi`/`VkMapsStyleApi` поверх `cameraController`, `overlayController`,
    `userPointerController`, `Style` (`createEmpty/FromJson/FromUrl/WithPredefinedStyle` — вне main thread,
@@ -306,7 +307,7 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 
 - Карта из example рисуется на эмуляторе API 35 и физическом устройстве; камера, маркер, смена стиля, tap-события
   работают; `dispose`/пересоздание без утечек и крашей.
-- `./gradlew :vk_maps_flutter_android:testDebugUnitTest` в CI зелёный.
+- `./gradlew :vk_maps_mapkit_android:testDebugUnitTest` в CI зелёный.
 - Пол версий (AGP 8.x, KGP 1.9, Gradle 8.x, JDK 17) объявлен в README и `docs/platform-matrix.md`; обе сборки
   example — на полу и на текущих версиях — зелёные.
 - Приложение на Groovy DSL и приложение на Kotlin DSL подключают плагин без правок в своём проекте.
@@ -323,11 +324,11 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 
 ### Задачи
 
-1. `ios/vk_maps_flutter_ios.podspec`: `s.platform = :ios, '15.0'`, `s.swift_version = '5.10'`,
+1. `ios/vk_maps_mapkit_ios.podspec`: `s.platform = :ios, '15.0'`, `s.swift_version = '5.10'`,
    `s.dependency 'VKMapsSDK', '~> 1.4'`, `EXCLUDED_ARCHS[sdk=iphonesimulator*] = i386`; параллельно
-   `ios/vk_maps_flutter_ios/Package.swift` с `.package(url: "https://github.com/maps-mailru/vk-maps-distribution.git",
+   `ios/vk_maps_mapkit_ios/Package.swift` с `.package(url: "https://github.com/maps-mailru/vk-maps-distribution.git",
    .upToNextMajor(from: "1.4.4"))`, продукт `MapsNativeSDK` — как двойная сборка в образце.
-2. `VkMapsFlutterPlugin` (`FlutterPlugin`), `VkMapViewFactory` (`FlutterPlatformViewFactory`), `VkMapPlatformView`
+2. `VkMapsMapkitPlugin` (`FlutterPlugin`), `VkMapViewFactory` (`FlutterPlatformViewFactory`), `VkMapPlatformView`
    с `MapView(frame:configuration:delegate:)`; `MapsSDKConfigurator.setup(apiKey:)` один раз.
 3. Реализация `VkMapsHostApi`/`VkMapsStyleApi` поверх `mapView.camera`, `mapView.overlay`, `mapView.userPointer`,
    `MapStyle` (async/await → `completion`). Учесть, что делегат может звать не из main thread — маршалить в
@@ -339,10 +340,10 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 
    ```text
    ios/
-     vk_maps_flutter_ios.podspec          # source_files ссылается внутрь каталога ниже
-     vk_maps_flutter_ios/
+     vk_maps_mapkit_ios.podspec          # source_files ссылается внутрь каталога ниже
+     vk_maps_mapkit_ios/
        Package.swift                      # тот же код, но как SwiftPM-пакет
-       Sources/vk_maps_flutter_ios/       # Swift-исходники, include/, Resources/
+       Sources/vk_maps_mapkit_ios/       # Swift-исходники, include/, Resources/
    ```
 
    Раскладка каталогов — как в `google_maps_flutter_ios`; готовые `Package.swift` для образца — в
@@ -481,7 +482,7 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 
 ### Задачи
 
-1. `packages/vk_maps_flutter/example`: экраны «Карта» (камера, стиль, маркеры, режимы, controls), «Маршрут»
+1. `packages/vk_maps_mapkit/example`: экраны «Карта» (камера, стиль, маркеры, режимы, controls), «Маршрут»
    (`vk_maps_api.directions` → `drawRoute`), «Поиск» (`suggest` → `search(ref)` → маркер), «Изохроны», «Статическая
    карта». Ключ через `--dart-define=VK_MAPS_API_KEY`, `geolocator` для позиции пользователя.
 2. `integration_test/` с `integrationDriver()`: карта создана, событие `mapShown` получено, `flyTo` изменил камеру,
@@ -507,10 +508,10 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 
 ### Задачи
 
-1. README пакета `vk_maps_flutter` (страница pub.dev, по-русски + `README.en.md`): быстрый старт Android/iOS
+1. README пакета `vk_maps_mapkit` (страница pub.dev, по-русски + `README.en.md`): быстрый старт Android/iOS
    (Maven-репозиторий и `pickFirsts` в `build.gradle` приложения, `Podfile`, минимальные версии), получение ключа,
    пример карты, пример REST, «если карта не появилась», ссылка на EULA SDK.
-2. `docs/publishing.md`: порядок `platform_interface → api → android → ios → vk_maps_flutter`, чек-лист (changelog,
+2. `docs/publishing.md`: порядок `platform_interface → api → android → ios → vk_maps_mapkit`, чек-лист (changelog,
    версия, dry-run, `topics`, отсутствие секретов в архиве). В pubspec каждого пакета — `repository`,
    `issue_tracker`, `topics`; если в example останется демо-ключ, объявить его в `false_secrets` (как в
    `google_maps_flutter`), а не прятать.

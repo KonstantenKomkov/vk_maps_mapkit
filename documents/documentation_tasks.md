@@ -193,8 +193,8 @@
 - **Ссылка:** https://dev.vk.ru/ru/vkmaps/maps-mobile-sdk/android
 - **Снимок:** [`research/dev_vk_ru/maps-mobile-sdk/android.md`](research/dev_vk_ru/maps-mobile-sdk/android.md)
 - **Изучить:** Подключение (`maven` + `ru.mail.maps:mapkit`), `MapGlobalConfig.setMapGlobalConfig(MapViewConfig(apiKey))`, `MapStartOptions`, `LogoConfig`, `MapView`, `ZoomView`, `CurrentLocationView`, `CompassView`, minSdk 24.
-- **Внедрить:** Пакет `vk_maps_flutter_android`: platform view, конфигурация, контролы. **Блокировано:** обе `maven`-ссылки со страницы отдают 404 (см. находку 3 плана) — нужен адрес выкладки на Nexus.
-- **Пакет:** vk_maps_flutter_android
+- **Внедрить:** Пакет `vk_maps_mapkit_android`: platform view, конфигурация, контролы. **Блокировано:** обе `maven`-ссылки со страницы отдают 404 (см. находку 3 плана) — нужен адрес выкладки на Nexus.
+- **Пакет:** vk_maps_mapkit_android
 - **Статус:** не начата
 
 ### Д-21. MapsSDK для iOS
@@ -202,8 +202,8 @@
 - **Ссылка:** https://dev.vk.ru/ru/vkmaps/maps-mobile-sdk/ios
 - **Снимок:** [`research/dev_vk_ru/maps-mobile-sdk/ios.md`](research/dev_vk_ru/maps-mobile-sdk/ios.md)
 - **Изучить:** Подключение, управление картой, маркеры, кластеризация, попапы, стили, GeoJSON, пробки и изолинии, обработка ошибок, геокодирование, SwiftUI, ограничения.
-- **Внедрить:** Пакет `vk_maps_flutter_ios`. Сверить с DocC нативного SDK: страница описывает legacy-поколение, часть API отличается — расхождения зафиксировать.
-- **Пакет:** vk_maps_flutter_ios
+- **Внедрить:** Пакет `vk_maps_mapkit_ios`. Сверить с DocC нативного SDK: страница описывает legacy-поколение, часть API отличается — расхождения зафиксировать.
+- **Пакет:** vk_maps_mapkit_ios
 - **Статус:** не начата
 
 ## Отображение карты
