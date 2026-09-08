@@ -21,6 +21,14 @@ class _RecordingHostApi implements VkMapsHostApi {
   PlatformMapConfiguration? lastConfiguration;
 
   @override
+  Future<void> initializeView(
+    int viewId,
+    PlatformMapCreationParams params,
+  ) async {
+    calls.add('initializeView($viewId, ${params.platformViewType.name})');
+  }
+
+  @override
   Future<void> updateConfiguration(
     int viewId,
     PlatformMapConfiguration configuration,

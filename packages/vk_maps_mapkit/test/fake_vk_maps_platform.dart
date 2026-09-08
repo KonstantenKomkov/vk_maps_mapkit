@@ -57,7 +57,10 @@ final class FakeVkMapsPlatform extends VkMapsPlatform {
     calls.add('buildView');
     return _FakePlatformView(
       viewId: viewIdToReturn,
-      onPlatformViewCreated: onPlatformViewCreated,
+      onPlatformViewCreated: (int viewId) async {
+        await initializeView(viewId, configuration);
+        onPlatformViewCreated(viewId);
+      },
     );
   }
 
@@ -70,6 +73,15 @@ final class FakeVkMapsPlatform extends VkMapsPlatform {
 
   @override
   Future<bool> isInitialized() async => true;
+
+  @override
+  Future<void> initializeView(
+    int viewId,
+    VkMapInitialConfiguration configuration,
+  ) async {
+    calls.add('initializeView($viewId)');
+    lastInitialConfiguration = configuration;
+  }
 
   @override
   Future<void> updateConfiguration(

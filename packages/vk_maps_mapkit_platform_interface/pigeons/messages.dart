@@ -12,7 +12,9 @@ import 'package:pigeon/pigeon.dart';
     kotlinOut:
         '../vk_maps_mapkit_android/android/src/main/kotlin/com/vk/maps/vk_maps_mapkit_android/Messages.g.kt',
     kotlinOptions: KotlinOptions(package: 'com.vk.maps.vk_maps_mapkit_android'),
-    swiftOut: '../vk_maps_mapkit_ios/ios/Classes/Messages.g.swift',
+    // ignore: lines_longer_than_80_chars
+    swiftOut:
+        '../vk_maps_mapkit_ios/ios/vk_maps_mapkit_ios/Sources/vk_maps_mapkit_ios/Messages.g.swift',
     copyrightHeader: 'pigeons/copyright.txt',
   ),
 )
@@ -289,6 +291,14 @@ abstract class VkMapsInitializerApi {
 /// platform view, потому что карт в приложении может быть несколько.
 @HostApi()
 abstract class VkMapsHostApi {
+  /// Создаёт карту внутри уже размещённого нативного представления.
+  ///
+  /// Вызывается один раз сразу после появления platform view: параметры
+  /// создания идут этим вызовом, а не через кодек представления, чтобы
+  /// контракт оставался один на всё.
+  @async
+  void initializeView(int viewId, PlatformMapCreationParams params);
+
   /// Применяет настройки карты. Передавать только изменившиеся поля.
   void updateConfiguration(int viewId, PlatformMapConfiguration configuration);
 

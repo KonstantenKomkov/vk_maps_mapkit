@@ -13,8 +13,8 @@ flutter:
     implements: vk_maps_mapkit
     platforms:
       ios:
+        dartPluginClass: VkMapsIos
         pluginClass: VkMapsMapkitIosPlugin
-        sharedDarwinSource: false
 
 dependencies:
   flutter:

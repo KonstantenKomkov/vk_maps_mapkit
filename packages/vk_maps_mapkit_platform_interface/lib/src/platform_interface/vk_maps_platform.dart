@@ -44,6 +44,16 @@ abstract base class VkMapsPlatform extends PlatformInterface {
   /// Настроен ли SDK.
   Future<bool> isInitialized();
 
+  /// Создаёт карту внутри уже размещённого нативного представления.
+  ///
+  /// Вызывается платформенным пакетом сразу после появления представления:
+  /// параметры создания идут типизированным вызовом, а не через кодек
+  /// platform view.
+  Future<void> initializeView(
+    int viewId,
+    VkMapInitialConfiguration configuration,
+  );
+
   /// Применяет настройки карты. Пустая дельта в натив не уходит.
   Future<void> updateConfiguration(
     int viewId,

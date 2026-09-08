@@ -1042,6 +1042,12 @@ class VkMapsInitializerApiSetup {
 ///
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol VkMapsHostApi {
+  /// Создаёт карту внутри уже размещённого нативного представления.
+  ///
+  /// Вызывается один раз сразу после появления platform view: параметры
+  /// создания идут этим вызовом, а не через кодек представления, чтобы
+  /// контракт оставался один на всё.
+  func initializeView(viewId: Int64, params: PlatformMapCreationParams, completion: @escaping (Result<Void, Error>) -> Void)
   /// Применяет настройки карты. Передавать только изменившиеся поля.
   func updateConfiguration(viewId: Int64, configuration: PlatformMapConfiguration) throws
   /// Применяет дельту набора маркеров.
@@ -1079,6 +1085,29 @@ class VkMapsHostApiSetup {
   /// Sets up an instance of `VkMapsHostApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: VkMapsHostApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    /// Создаёт карту внутри уже размещённого нативного представления.
+    ///
+    /// Вызывается один раз сразу после появления platform view: параметры
+    /// создания идут этим вызовом, а не через кодек представления, чтобы
+    /// контракт оставался один на всё.
+    let initializeViewChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.initializeView\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      initializeViewChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let viewIdArg = args[0] as! Int64
+        let paramsArg = args[1] as! PlatformMapCreationParams
+        api.initializeView(viewId: viewIdArg, params: paramsArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      initializeViewChannel.setMessageHandler(nil)
+    }
     /// Применяет настройки карты. Передавать только изменившиеся поля.
     let updateConfigurationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.updateConfiguration\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {

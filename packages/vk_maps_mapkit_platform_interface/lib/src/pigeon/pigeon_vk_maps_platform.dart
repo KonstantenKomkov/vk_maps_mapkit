@@ -56,6 +56,12 @@ base class PigeonVkMapsPlatform extends VkMapsPlatform
   Future<bool> isInitialized() => _initializer.isInitialized();
 
   @override
+  Future<void> initializeView(
+    int viewId,
+    VkMapInitialConfiguration configuration,
+  ) => _host.initializeView(viewId, configuration.toMessage());
+
+  @override
   Future<void> updateConfiguration(
     int viewId,
     VkMapConfiguration configuration,

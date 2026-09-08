@@ -1111,6 +1111,14 @@ interface VkMapsInitializerApi {
  * Generated interface from Pigeon that represents a handler of messages from Flutter.
  */
 interface VkMapsHostApi {
+  /**
+   * Создаёт карту внутри уже размещённого нативного представления.
+   *
+   * Вызывается один раз сразу после появления platform view: параметры
+   * создания идут этим вызовом, а не через кодек представления, чтобы
+   * контракт оставался один на всё.
+   */
+  fun initializeView(viewId: Long, params: PlatformMapCreationParams, callback: (Result<Unit>) -> Unit)
   /** Применяет настройки карты. Передавать только изменившиеся поля. */
   fun updateConfiguration(viewId: Long, configuration: PlatformMapConfiguration)
   /** Применяет дельту набора маркеров. */
@@ -1152,6 +1160,26 @@ interface VkMapsHostApi {
     @JvmOverloads
     fun setUp(binaryMessenger: BinaryMessenger, api: VkMapsHostApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.initializeView$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val viewIdArg = args[0] as Long
+            val paramsArg = args[1] as PlatformMapCreationParams
+            api.initializeView(viewIdArg, paramsArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(MessagesPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.vk_maps_mapkit_platform_interface.VkMapsHostApi.updateConfiguration$separatedMessageChannelSuffix", codec)
         if (api != null) {
