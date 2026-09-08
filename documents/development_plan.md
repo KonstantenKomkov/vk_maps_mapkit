@@ -20,8 +20,11 @@
 
 Все 45 страниц документации с `dev.vk.ru/ru/vkmaps` прочитаны успешно, ни одна не упала. Дополнительно изучены
 GitHub-репозитории `maps-mailru/maps-sdk-ios` (legacy) и `maps-mailru/vk-maps-distribution` (актуальный SDK), DocC-архив
-`MapsNativeSDK`, podspec `VKMapsSDK` и исходники снятого с публикации плагина `flutter_vk_maps` 0.3.4666
-(предположительно от команды VK Карт, издатель на pub.dev не верифицирован). Выжимки лежат в [`research/`](research/).
+`MapsNativeSDK` и podspec `VKMapsSDK`. Выжимки лежат в [`research/`](research/).
+
+**Источник API — документация нативных SDK.** Обвязка пишется поверх нативных пакетов (`VKMapsSDK` на iOS,
+`com.vk.maps:maps-native-sdk` на Android); поверхность API берётся из DocC-архива и документации вендора.
+Сторонние и снятые с публикации Flutter-плагины источником контракта не являются и в план не входят.
 
 | Раздел документации | Страниц | Результат | Что важно для плана |
 | --- | ---: | --- | --- |
@@ -38,21 +41,24 @@ GitHub-репозитории `maps-mailru/maps-sdk-ios` (legacy) и `maps-mailr
 1. **Два поколения мобильных SDK.** Страницы `maps-mobile-sdk/android` и `maps-mobile-sdk/ios` описывают legacy SDK
    (Android `ru.mail.maps:mapkit`, iOS `MapsSDK` 1.1.48, апрель 2024) — это `WKWebView`/WebView вокруг JS-карты.
    Актуальный SDK — **нативный** (`MapsNativeSDK`/`VKMapsSDK` на iOS, `com.vk.maps:maps-native-sdk` на Android,
-   релиз 1.4.4.14633 от 26 августа 2026, рендер Metal/Vulkan). На сайте документации он не описан; API восстановлен
-   по DocC и исходникам `flutter_vk_maps`. **План строится на нативном SDK.**
-2. **Артефакты Android недоступны.** Maven-репозиторий `https://artifactory-external.vkpartner.ru/artifactory/maps-sdk-android`
-   отвечает 404 на все проверенные пути (8 сентября 2026). Зеркала на Maven Central нет. iOS-бинарники доступны
-   через GitHub Releases `vk-maps-distribution` (SPM) и CocoaPods `VKMapsSDK`. Без ответа `support.maps@lists.vk.team`
-   этап Android не стартует.
-3. **Плагин `flutter_vk_maps` снят с публикации.** Версия 0.3.4666 (октябрь 2024) помечена discontinued без замены.
-   Формально он не официальный: на pub.dev нет верифицированного издателя. Но метаданные указывают на команду
-   VK Карт (автор podspec `VK`, почта `support.maps@lists.vk.team`, namespace `com.vk.maps`, версия равна номеру
-   сборки SDK). Его код — лучший справочник по мосту: Pigeon-контракт на 77 методов, platform view `vk-maps`,
-   `MapView.RenderTarget.Texture` на Android, `MapSDKTheme`, `pickFirsts` для `libVkLayer_khronos_validation.so`.
+   релиз 1.4.4.14633 от 26 августа 2026, рендер Metal/Vulkan). На сайте документации он не описан; API берётся из
+   DocC-архива `MapsNativeSDK` и ответов вендора. **План строится на нативном SDK.**
+2. **Артефакты Android недоступны публично.** Maven-репозиторий
+   `https://artifactory-external.vkpartner.ru/artifactory/maps-sdk-android` отвечает 404 на все проверенные пути;
+   сам хост `artifactory-external.vkpartner.ru/artifactory/` редиректит на `https://nexus-external.vkteam.ru/` —
+   выкладка переехала с Artifactory на Nexus. В публичном списке Nexus 28 репозиториев, ни одного maps, поиск по
+   `com.vk.maps` и `maps-native-sdk` пуст. Зеркала на Maven Central нет (`g:com.vk.maps` → 0). Проверено
+   8 сентября 2026. iOS-бинарники доступны: GitHub Releases `maps-mailru/vk-maps-distribution` (тег 1.4.4.14633,
+   xcframework-архивы + `VKMapsSDK.zip`) и CocoaPods `VKMapsSDK`. Нужны координаты Android-выкладки на Nexus и,
+   вероятно, доступ — без этого этап Android не стартует.
+3. **Доступ к документации нестабилен.** Портал, с которого снят ресёрч, переехал: `platform.vk.com/docs/vkmaps/*`
+   редиректит на форму входа VK, `dev.vk.com/ru/vkmaps` отдаёт 404 с баннером техработ (8 сентября 2026). Пока
+   портал не восстановится, рабочий справочник по REST — выжимки в [`research/`](research/), по нативному
+   API — DocC-архив `MapsNativeSDK.doccarchive` из `vk-maps-distribution`.
 4. **Нативный SDK не MapLibre.** Собственный движок VK, но стили, источники и слои — Mapbox Style Spec JSON. Значит,
    Dart-API стилей можно проектировать как «JSON-first» без выдумывания собственной модели слоёв.
-5. **Кластеризации в нативном SDK нет.** В Pigeon-контракте `flutter_vk_maps` `addCluster` отсутствует (он был в
-   legacy SDK). Кластеризацию делать на Dart-стороне или ждать SDK.
+5. **Кластеризации в нативном SDK нет.** В DocC-символах нативного SDK нет ни одного `Cluster`-типа;
+   `addCluster`/`removeCluster` есть только в legacy WebView-SDK. Кластеризацию делать на Dart-стороне или ждать SDK.
 6. **REST-сервисы не требуют нативного кода.** Весь блок «поиск, маршруты, дополнительные сервисы» — чистый Dart с
    `http`, тестируется без устройств и может публиковаться отдельным пакетом.
 7. **Расхождения в документации**, которые надо закрепить тестами: `pin` в результатах — `[lon, lat]`, а у
@@ -116,14 +122,18 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 ### Задачи
 
 1. Запросить API-ключ на `https://maps.vk.com/ru/welcome/`; до ответа использовать `demo.maps.vk.com` для REST.
-2. Написать в `support.maps@lists.vk.team`: (1) актуальные координаты и доступ к Maven-репозиторию
-   `maps-native-sdk` для Android; (2) является ли `flutter_vk_maps` их пакетом, почему снят и есть ли планы; (3) есть ли кластеризация и
-   Polyline-source в нативном SDK; (4) условия EULA `https://help.mail.ru/legal/terms/maps/terms` для стороннего
-   open-source плагина. Вопросы и ответы фиксировать в `docs/questions-for-vendor.md`.
+2. Написать в `support.maps@lists.vk.team`: (1) актуальные координаты Android-выкладки `com.vk.maps:maps-native-sdk`
+   на `nexus-external.vkteam.ru` (имя репозитория, нужны ли креды) и список доступных версий; (2) есть ли
+   документация нативного Android SDK (аналог DocC) и где она; (3) есть ли кластеризация и Polyline-source в
+   нативном SDK; (4) условия EULA `https://help.mail.ru/legal/terms/maps/terms` для стороннего open-source плагина.
+   Вопросы и ответы фиксировать в `docs/questions-for-vendor.md`.
 3. Проверить скриптом доступность артефактов и зафиксировать результат в `docs/platform-matrix.md`:
-   `pod spec cat VKMapsSDK`, `swift package resolve` на `vk-maps-distribution` 1.4.4.14633, `curl -I` по Maven-путям.
-4. Получить исходники `flutter_vk_maps` 0.3.4666 как справочник (`dart pub cache add flutter_vk_maps --version 0.3.4666`
-   или tgz из pub) и составить таблицу «метод Pigeon → метод SDK» для Android и iOS — это основа контракта этапа 2.
+   `pod spec cat VKMapsSDK`, `swift package resolve` на `vk-maps-distribution` 1.4.4.14633, `curl` по Nexus
+   (`/service/rest/v1/repositories`, `/service/rest/v1/search?group=com.vk.maps`) и по старым Maven-путям Artifactory.
+4. Составить таблицу поверхности API нативного SDK по документации: распаковать `MapsNativeSDK.doccarchive` из
+   релиза 1.4.4.14633, выгрузить символы (контроллеры камеры, оверлеев, пользовательской точки, `Style`, слушатели
+   событий) в `docs/native-api-surface.md`; для Android — то же по документации вендора после ответа на п. 2.
+   Эта таблица — основа Pigeon-контракта этапа 2.
 5. Закрепить решение в `docs/design-decisions.md`: нативный SDK, Pigeon, federated-структура, отсутствие web в первом
    релизе, версии SDK (iOS 1.4.4.14633; Android — по ответу вендора).
 
@@ -194,7 +204,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 ### Критерии готовности
 
-- Контракт покрывает всё, что умеет `flutter_vk_maps` 0.3.4666, плюс `viewId`; нет методов, у которых нет
+- Контракт покрывает поверхность API из `docs/native-api-surface.md` плюс `viewId`; нет методов, у которых нет
   соответствия в обоих нативных SDK (иначе — в `docs/platform-matrix.md` как «только iOS/только Android»).
 - `dart run pigeon` воспроизводим, `make gen` идемпотентен, diff после повторного запуска пуст.
 
@@ -218,7 +228,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
    `applyConfig`, `RenderTarget.Texture`; `MapsSdk.setup` один раз на процесс.
 3. Реализация `VkMapsHostApi`/`VkMapsStyleApi` поверх `cameraController`, `overlayController`,
    `userPointerController`, `Style` (`createEmpty/FromJson/FromUrl/WithPredefinedStyle` — вне main thread,
-   ответ через `Result`). Реестр стилей по id, как в `flutter_vk_maps`.
+   ответ через `Result`). Реестр стилей по id — на стороне плагина.
 4. События: `eventsListener`, `errorListener`, `modeUpdateListener`, `nextModeListener` → `VkMapsFlutterApi`; все
    вызовы в Dart строго на main thread (`Handler(Looper.getMainLooper())`).
 5. Жизненный цикл: `dispose` platform view освобождает `MapView` и стили; повторное создание карты после `dispose`
@@ -411,7 +421,7 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 
 | № | Задача | Приоритет | Сложность | Зависимость |
 | --- | --- | --- | --- | --- |
-| 1 | Ключ, письмо вендору, проверка артефактов, справочник `flutter_vk_maps` | P0 | M | — |
+| 1 | Ключ, письмо вендору, проверка артефактов, разбор DocC в `docs/native-api-surface.md` | P0 | M | — |
 | 2 | Скелет монорепо, `tool/`, `Makefile`, CI | P0 | M | 1 |
 | 3 | Модели и Pigeon-контракт в `platform_interface` | P0 | L | 2 |
 | 4 | iOS-реализация | P0 | XL | 3 |
@@ -485,6 +495,7 @@ make check          # + dart pub publish --dry-run
 
 ---
 
-**Последнее обновление:** 8 сентября 2026 — план составлен по итогам чтения 45 страниц документации VK Карт, DocC
-нативного SDK и исходников снятого с публикации `flutter_vk_maps` (издатель не верифицирован); зафиксировано решение строить обёртку на нативном
-SDK, а не на legacy WebView-SDK из документации.
+**Последнее обновление:** 8 сентября 2026 — план составлен по итогам чтения 45 страниц документации VK Карт и DocC
+нативного SDK; зафиксировано решение строить обёртку на нативных пакетах (`VKMapsSDK`, `com.vk.maps:maps-native-sdk`)
+по их документации, а не на legacy WebView-SDK и не на сторонних плагинах. Уточнено: выкладка VK переехала с
+Artifactory на Nexus (`nexus-external.vkteam.ru`), Android-артефакты в публичной части не найдены.
