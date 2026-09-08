@@ -50,11 +50,16 @@ GitHub-репозитории `maps-mailru/maps-sdk-ios` (legacy) и `maps-mailr
    `com.vk.maps` и `maps-native-sdk` пуст. Зеркала на Maven Central нет (`g:com.vk.maps` → 0). Проверено
    8 сентября 2026. iOS-бинарники доступны: GitHub Releases `maps-mailru/vk-maps-distribution` (тег 1.4.4.14633,
    xcframework-архивы + `VKMapsSDK.zip`) и CocoaPods `VKMapsSDK`. Нужны координаты Android-выкладки на Nexus и,
-   вероятно, доступ — без этого этап Android не стартует.
-3. **Доступ к документации нестабилен.** Портал, с которого снят ресёрч, переехал: `platform.vk.com/docs/vkmaps/*`
-   редиректит на форму входа VK, `dev.vk.com/ru/vkmaps` отдаёт 404 с баннером техработ (8 сентября 2026). Пока
-   портал не восстановится, рабочий справочник по REST — выжимки в [`research/`](research/), по нативному
-   API — DocC-архив `MapsNativeSDK.doccarchive` из `vk-maps-distribution`.
+   вероятно, доступ — без этого этап Android не стартует. То же касается legacy-координат `ru.mail.maps:mapkit`
+   из документации (п. 3): путь 404.
+3. **Документация Android SDK описывает `ru.mail.maps:mapkit`, а её Maven-ссылка мертва.** Страница
+   `https://dev.vk.ru/ru/vkmaps/maps-mobile-sdk/android` доступна (проверено 8 сентября 2026) и даёт API:
+   `MapGlobalConfig.setMapGlobalConfig(MapViewConfig(apiKey))`, `MapStartOptions(center, zoomLevel, style,
+   compassLocationMode, logoConfig)`, `MapView`, `ZoomView`, `CurrentLocationView`, `CompassView`. Но обе
+   Maven-ссылки со страницы — `.../artifactory/maps-sdk-android/` и
+   `.../artifactory/maps-sdk-android/ru/mail/maps/mapkit/` — отдают 404, причём страницу 404 рисует уже Sonatype
+   Nexus 3.91.1: документация ссылается на путь Artifactory, которого на новом хосте нет. Домен документации —
+   `dev.vk.ru` (не `.com`); `platform.vk.com/docs/vkmaps/*` требует вход в VK.
 4. **Нативный SDK не MapLibre.** Собственный движок VK, но стили, источники и слои — Mapbox Style Spec JSON. Значит,
    Dart-API стилей можно проектировать как «JSON-first» без выдумывания собственной модели слоёв.
 5. **Кластеризации в нативном SDK нет.** В DocC-символах нативного SDK нет ни одного `Cluster`-типа;
