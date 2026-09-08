@@ -49,7 +49,7 @@ final class VkMapPlatformView: NSObject, FlutterPlatformView, MapViewDelegate {
       predefinedStyle: params.configuration.style?.predefined?.native ?? .main,
       fonts: [],
       selectFeatures: selectFeatures,
-      cameraMode: .free
+      cameraMode: .perspective
     )
 
     let map = MapView(
@@ -105,8 +105,14 @@ final class VkMapPlatformView: NSObject, FlutterPlatformView, MapViewDelegate {
     if let value = configuration.padding {
       mapView.camera.setPadding(value.mapEdgeInsets, animationDuration: 0, reason: nil)
     }
-    if let value = configuration.minZoom { mapView.camera.minZoom = value }
-    if let value = configuration.maxZoom { mapView.camera.maxZoom = value }
+    if configuration.minZoom != nil || configuration.maxZoom != nil {
+      // Границы зума задаются одним вызовом; незаданная сторона остаётся
+      // прежней.
+      mapView.camera.setZoomRange(
+        minZoom: configuration.minZoom ?? mapView.camera.minZoom,
+        maxZoom: configuration.maxZoom ?? mapView.camera.maxZoom
+      )
+    }
     if let style = configuration.style { apply(style: style) }
   }
 
@@ -225,7 +231,11 @@ final class VkMapPlatformView: NSObject, FlutterPlatformView, MapViewDelegate {
     guard let style = try requireMap().style else {
       throw VkMapsError.styleNotReady
     }
-    try style.addImage(imageID: imageId, pngImageData: pngData, scale: CGFloat(scale))
+    try style.addImage(
+      imageID: imageId,
+      pngImageData: pngData,
+      scale: CGFloat(scale)
+    )
   }
 
   func removeStyleImage(imageId: String) {
@@ -245,7 +255,7 @@ final class VkMapPlatformView: NSObject, FlutterPlatformView, MapViewDelegate {
     let source = try MapDataSource(
       id: sourceId,
       json: geoJson,
-      type: .geojson,
+      type: .geoJSON,
       receiveTapEvents: true
     )
     try requireStyle().addSource(source)
@@ -262,7 +272,7 @@ final class VkMapPlatformView: NSObject, FlutterPlatformView, MapViewDelegate {
     let source = try MapDataSource(
       id: sourceId,
       encodedString: polyline,
-      type: .geojson,
+      type: .geoJSON,
       receiveTapEvents: true
     )
     try requireStyle().addSource(source)
@@ -294,9 +304,12 @@ final class VkMapPlatformView: NSObject, FlutterPlatformView, MapViewDelegate {
   }
 
   func dispose() {
+    // Отдельного метода освобождения у MapView нет: карта убирается из
+    // иерархии и отпускается, дальше её освобождает deinit SDK.
     mapView?.delegate = nil
     markerIds.removeAll()
-    mapView?.cleanup()
+    mapView?.overlay.removeAllMarkers()
+    mapView?.reduceMemoryUse()
     mapView?.removeFromSuperview()
     mapView = nil
   }

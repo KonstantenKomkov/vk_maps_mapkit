@@ -168,3 +168,37 @@ SDK нет ни в документации (описан только `ru.mail.
 **Отвергнуто.** Ждать ответа вендора и не писать Android вовсе: контракт и
 фасад всё равно нужно проверять на двух платформах, а переписать маппинг под
 другое поколение SDK дешевле, чем начинать с нуля.
+
+---
+
+## Р-9. Источник истины по API iOS SDK — модуль, а не DocC
+
+**Дата:** 8 сентября 2026.
+
+**Контекст.** Контракт и Swift-код писались по DocC-архиву из дистрибутива —
+другой документации нативного iOS SDK нет. Первая же сборка примера
+показала, что DocC и сам модуль расходятся:
+
+| В DocC | В `.swiftinterface` |
+| --- | --- |
+| `MapAnimationEasing` | `MapCameraAnimationEasing` |
+| `MapCameraAnimationResult.finished` | `.ended` |
+| `CameraMovingPhase.singeCompleted` | такой случай отсутствует |
+| `MapConfiguration.CameraMode.free` | `.perspective` / `.earth` |
+| `MapDataSourceType.geojson` | `.geoJSON` |
+| `MapView.cleanup()` | метода нет |
+| `camera.minZoom` / `maxZoom` — изменяемые | только чтение, есть `setZoomRange` |
+
+**Решение.** При расхождении верим `.swiftinterface` из xcframework, а не
+DocC. Перед правкой нативного кода имя и сигнатуру проверяем в модуле:
+
+```bash
+grep -n "enum MapCameraAnimationEasing" \
+  packages/vk_maps_mapkit/example/ios/Pods/VKMapsSDK/MapsNativeSDK.xcframework/\
+ios-arm64_x86_64-simulator/MapsNativeSDK.framework/Modules/\
+MapsNativeSDK.swiftmodule/arm64-apple-ios-simulator.swiftinterface
+```
+
+**Последствия.** Таблица в `native-api-surface.md` перепроверяется по модулю
+при каждом подъёме версии SDK. Сборка примера — обязательная часть проверки,
+а не финальный шаг: без неё расхождения не видны.

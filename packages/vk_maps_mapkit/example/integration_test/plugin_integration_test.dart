@@ -4,16 +4,34 @@
 //
 // Без ключа карта не создаётся, поэтому проверки карты пропускаются: тест
 // не должен падать там, где нечего проверять.
+import 'dart:ui' show DartPluginRegistrant;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:vk_maps_mapkit/vk_maps_mapkit.dart';
+import 'package:vk_maps_mapkit_platform_interface/vk_maps_mapkit_platform_interface.dart'
+    show VkMapsPlatform;
 import 'package:vk_maps_mapkit_example/main.dart';
 
 const String _apiKey = String.fromEnvironment('VK_MAPS_API_KEY');
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  // В обычном приложении регистрацию платформенной реализации запускает
+  // runApp; в интеграционных тестах точка входа другая, поэтому регистрант
+  // вызывается явно — иначе VkMap соберётся на реализации по умолчанию и
+  // упадёт с UnimplementedError.
+  DartPluginRegistrant.ensureInitialized();
+
+  testWidgets('платформенная реализация зарегистрирована', (
+    WidgetTester tester,
+  ) async {
+    expect(
+      VkMapsPlatform.instance.runtimeType.toString(),
+      isNot('PigeonVkMapsPlatform'),
+    );
+  });
 
   testWidgets('приложение поднимается', (WidgetTester tester) async {
     await tester.pumpWidget(const VkMapsExampleApp());
