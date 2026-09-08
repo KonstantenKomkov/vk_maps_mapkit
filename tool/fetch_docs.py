@@ -42,6 +42,10 @@ def inline(node) -> str:
             out.append("**" + inline(ch).strip() + "**")
         elif ch.name in ("em", "i"):
             out.append("*" + inline(ch).strip() + "*")
+        elif ch.name == "img":
+            src = ch.get("src", "")
+            if src:
+                out.append(f"![{ch.get('alt', '')}]({src})")
         elif ch.name == "a":
             text = inline(ch).strip()
             href = ch.get("href", "")
@@ -60,7 +64,10 @@ def code_block(node) -> str:
     for cls in node.get("class", []):
         if cls.startswith("language-"):
             lang = cls[len("language-"):]
-    return f"```{lang}\n{node.get_text().rstrip()}\n```"
+    text = node.get_text().rstrip()
+    if not lang and text.lstrip()[:1] in "{[":
+        lang = "json"  # примеры ответов размечены <code> без класса языка
+    return f"```{lang}\n{text}\n```"
 
 
 def table(node) -> str:
@@ -89,8 +96,11 @@ def walk(node, out, depth=0):
             text = inline(ch).strip()
             if text:
                 out.append(text)
-        elif ch.name == "code" and any(c.startswith("language-") for c in ch.get("class", [])):
-            out.append(code_block(ch))
+        elif ch.name == "code":
+            if any(c.startswith("language-") for c in ch.get("class", [])) or "\n" in ch.get_text():
+                out.append(code_block(ch))
+            else:
+                out.append("`" + ch.get_text().strip() + "`")
         elif ch.name in ("ul", "ol"):
             marker = "-" if ch.name == "ul" else "1."
             items = []

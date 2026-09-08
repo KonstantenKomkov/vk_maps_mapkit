@@ -33,11 +33,37 @@
 
 Для простого добавления отдельного слоя с иконками достаточно выполнить действия, описанные ниже.
 
-Пример добавления точек на карту
+![Пример добавления точек на карту](https://sun9-34.vkuserphoto.ru/2hN6BIbcxLoErCAbqpFwCtCCwTUOEiCe5vbXcw/QfPzJDVixvI.jpg)Пример добавления точек на карту
 
 #### Шаг 1. Создание списка точек
 
 **Пример файла GeoJson с точками**
+
+```
+let userPointData = {
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [37.6165, 55.7505]
+        }
+    }, {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [37.4165, 55.7505]
+        }
+    }, {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [37.6165, 55.8505]
+        }
+    }]
+};
+};
+```
 
 #### Шаг 2. Создание иконки
 
@@ -45,15 +71,76 @@
 
 **Пример кода для отображения иконки**
 
+```
+map.on('load', function () {
+    map.loadImage(
+        'https://maps.vk.com/api/styles/pins/blue_target.png',
+        function (error, image) {
+            if (error) throw error;
+            map.addImage('custom_pin', image);
+            map.addLayer({
+                "id": "points",
+                "type": "symbol",
+                "source": {
+                    "type": "geojson",
+                    "data": userPointData
+                },
+                "layout": {
+                    "icon-image": "custom_pin",
+                    "icon-size": 1
+                }
+            });
+        }
+    );
+});
+```
+
 ### Добавление линии
 
 Линейные объекты на карту добавляются таким же образом, как и точечные, надо подготовить данные и описать при помощи стиля каким образом их рисовать.
 
-Пример добавления линий на карту
+![Пример добавления линий на карту](https://sun9-25.vkuserphoto.ru/_cGSqwk0HZnaNjXtGGW_XkaWo6wKX6CxwE9cZg/oObOq61nK9U.jpg)Пример добавления линий на карту
 
 #### Шаг 1. Создание линии
 
 **Пример файла GeoJson с двумя линиями**
+
+```
+let userLineData = {
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [
+                [37.6165, 55.7505],
+                [37.6375, 55.7515],
+                [37.6375, 55.7515],
+                [37.665, 55.7545],
+                [37.765, 55.7645],
+                [37.785, 55.7745],
+                [37.803, 55.7645],
+                [37.83, 55.7545],
+                [37.89, 55.78]
+            ]
+        }
+    }, {
+        "type": "Feature",
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [
+                [37.4165, 55.7505],
+                [37.4166, 55.7505],
+                [37.4169, 55.6],
+                [37.5169, 55.545],
+                [37.6169, 55.45],
+                [37.5169, 55.334],
+                [37.3169, 55.211]
+            ]
+        }
+    }]
+};
+```
 
 #### Шаг 2. Отображение слоя с линиями
 
@@ -61,12 +148,89 @@
 
 **Пример кода для отображения линий**
 
+```
+map.on('load', function () {
+    map.addLayer({
+        'id': 'route',
+        'type': 'line',
+        'source': {
+            'type': 'geojson',
+            'data': userLineData
+        },
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': '#AE3478',
+            'line-width': 8
+        }
+    });
+});
+```
+
 ### Добавление полигона
 
-Пример добавления полигона на карту
+![Пример добавления полигона на карту](https://sun9-9.vkuserphoto.ru/EsCBwnGBhj2W2MeixpRFmifRfZC5yyqRBhW15g/iRQt64sW97c.jpg)Пример добавления полигона на карту
 
 Добавление слоя с полигонами, по сути, ничем не отличается от создания слоя с линиями. Полигоны могут быть как сплошными, так и с дырками.
 
 #### Пример файла GeoJson со сложным полигоном
 
+```
+let userPolygonData = {
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [37.427278, 55.756486],
+                    [37.387117, 55.734843],
+                    [37.405653, 55.709126],
+                    [37.4592, 55.70042],
+                    [37.518239, 55.683585],
+                    [37.617439, 55.690939],
+                    [37.669614, 55.707578],
+                    [37.674419, 55.73291],
+                    [37.635975, 55.777345],
+                    [37.583457, 55.795105],
+                    [37.525791, 55.799544],
+                    [37.478765, 55.780049],
+                    [37.427278, 55.756486]
+                ], [
+                    [37.495585, 55.749917],
+                    [37.481511, 55.745666],
+                    [37.48872, 55.718796],
+                    [37.536432, 55.718989],
+                    [37.582428, 55.724983],
+                    [37.592382, 55.740835],
+                    [37.551535, 55.759964],
+                    [37.495585, 55.749917]
+                ]
+            ]
+        }
+    }]
+};
+```
+
 #### Пример кода для отображения полигона
+
+```
+map.on('load', function () {
+    map.addLayer({
+        'id': 'maine',
+        'type': 'fill',
+        'source': {
+            'type': 'geojson',
+            'data': userPolygonData
+        },
+        'layout': {},
+        'paint': {
+            'fill-color': '#6ea5e8',
+            'fill-opacity': 0.5
+        }
+    });
+});
+```

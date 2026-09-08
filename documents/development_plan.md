@@ -14,11 +14,17 @@
 
 **Правило графика:** не более **двух** задач в день; **одна сложная** задача занимает **целый день**.
 
+**Задачи по документации:** [`documentation_tasks.md`](documentation_tasks.md) — 37 задач, по одной на страницу
+документации VK Карт: изучить, решить, нужно ли внедрять, внедрить или записать отказ с причиной. Снимки страниц —
+в [`research/dev_vk_ru/`](research/dev_vk_ru/).
+
 ---
 
 ## 1. Что прочитано и что из этого следует
 
-Все 45 страниц документации с `dev.vk.ru/ru/vkmaps` прочитаны успешно, ни одна не упала. Дополнительно изучены
+Все 45 страниц документации с `dev.vk.ru/ru/vkmaps` прочитаны успешно, ни одна не упала. 37 из них сняты в
+Markdown скриптом [`../tool/fetch_docs.py`](../tool/fetch_docs.py) и лежат в [`research/dev_vk_ru/`](research/dev_vk_ru/)
+— по каждой заведена задача в [`documentation_tasks.md`](documentation_tasks.md). Дополнительно изучены
 GitHub-репозитории `maps-mailru/maps-sdk-ios` (legacy) и `maps-mailru/vk-maps-distribution` (актуальный SDK), DocC-архив
 `MapsNativeSDK` и podspec `VKMapsSDK`. Выжимки лежат в [`research/`](research/).
 
@@ -81,6 +87,8 @@ GitHub-репозитории `maps-mailru/maps-sdk-ios` (legacy) и `maps-mailr
    `@FlutterApi` окажется неудобен.
 3. Нативные SDK не вендорятся: Android — `implementation` из Maven VK, iOS — `s.dependency 'VKMapsSDK'` и SPM-пакет
    `vk-maps-distribution`. Версия SDK закрепляется в одном месте на платформу и поднимается отдельным коммитом.
+   Оба современных способа подключения обязательны и проверяются в CI: **SPM на iOS** (наравне с CocoaPods) и
+   **KGP с декларативным `plugins {}` на Android** (наравне со старым `apply plugin:`) — см. этапы 3 и 4.
 4. Dart-модели — immutable, с `==`/`hashCode`, без `freezed` в публичных пакетах (меньше транзитивных зависимостей у
    потребителя). Координаты в Dart-API всегда `LatLon(latitude, longitude)`; конвертация `[lon, lat]` REST-ответов
    спрятана в парсерах и покрыта тестами.
@@ -239,12 +247,22 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 5. Жизненный цикл: `dispose` platform view освобождает `MapView` и стили; повторное создание карты после `dispose`
    не падает; поворот экрана.
 6. Unit-тесты Kotlin для маппинга enum/моделей (JUnit, как `android/src/test/kotlin` в образце).
+7. **Поддержка KGP (Kotlin Gradle Plugin).** Плагин должен собираться у приложений и на старом, и на новом
+   Android-обвязе Flutter: объявление через декларативный блок `plugins { id "com.android.library"; id
+   "org.jetbrains.kotlin.android" }` вместо `apply plugin:`, совместимость с загрузчиком плагинов из
+   `settings.gradle`/`settings.gradle.kts`. Версия KGP не прибивается жёстко: берётся из версии, объявленной
+   приложением, а в плагине фиксируется только минимально поддерживаемая. Составить и держать в
+   `docs/platform-matrix.md` матрицу совместимости AGP × KGP × Gradle × JDK (минимум: KGP 1.9.x и 2.x, AGP 8.x,
+   Gradle 8.x, JDK 17) и прогонять сборку example по её углам. `build.gradle.kts` в примере — как отдельная
+   проверка, что Kotlin DSL у потребителя не ломается.
 
 ### Критерии готовности
 
 - Карта из example рисуется на эмуляторе API 35 и физическом устройстве; камера, маркер, смена стиля, tap-события
   работают; `dispose`/пересоздание без утечек и крашей.
 - `./gradlew :vk_maps_flutter_android:testDebugUnitTest` в CI зелёный.
+- Матрица AGP × KGP × Gradle × JDK заполнена, сборка example зелёная на минимальной и максимальной точках;
+  приложение на Groovy DSL и приложение на Kotlin DSL подключают плагин без правок в своём проекте.
 
 ---
 
@@ -268,12 +286,19 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
    `DispatchQueue.main` перед `FlutterApi`.
 4. `MapViewDelegate` → `VkMapsFlutterApi`: `didReceiveEvent`, `willChangeModeTo`, `didChangeModeTo`, `didFailWithError`.
 5. Жизненный цикл: освобождение `MapView` в `deinit`, память при нескольких картах, background/foreground.
-6. Проверить сборку и через CocoaPods, и через SPM (`flutter config --enable-swift-package-manager`).
+6. **Поддержка SPM (Swift Package Manager).** Плагин публикуется в двух режимах подключения одновременно:
+   CocoaPods (`.podspec`) и SPM (`ios/vk_maps_flutter_ios/Package.swift` в раскладке, которую ищет Flutter).
+   Зависимость на SDK в SPM-режиме — пакет `maps-mailru/vk-maps-distribution`, в CocoaPods-режиме — под
+   `VKMapsSDK`; версия SDK задаётся в одном месте и не расходится между режимами. Проверять оба пути:
+   `flutter config --enable-swift-package-manager` и сборку с выключенным SPM (fallback на pods), плюс
+   `pod lib lint`. Ресурсы и `.modulemap`, если появятся, объявлять так, чтобы работали в обоих режимах.
 
 ### Критерии готовности
 
 - Карта из example рисуется на симуляторе и физическом устройстве iOS 15+; тот же сценарий, что в п. 3.
 - `ios.yml` в CI собирает example в обоих режимах (pods, SPM) без предупреждений линтера подспека.
+- Приложение с включённым SPM собирается без `Podfile`, приложение без SPM — через CocoaPods; версия SDK в обоих
+  режимах одна и та же.
 
 ---
 
@@ -429,8 +454,8 @@ vk_maps_api    -> http                (никаких Flutter-зависимос
 | 1 | Ключ, письмо вендору, проверка артефактов, разбор DocC в `docs/native-api-surface.md` | P0 | M | — |
 | 2 | Скелет монорепо, `tool/`, `Makefile`, CI | P0 | M | 1 |
 | 3 | Модели и Pigeon-контракт в `platform_interface` | P0 | L | 2 |
-| 4 | iOS-реализация | P0 | XL | 3 |
-| 5 | Android-реализация | P0 | XL | 3, ответ вендора по Maven |
+| 4 | iOS-реализация (CocoaPods + SPM) | P0 | XL | 3 |
+| 5 | Android-реализация (KGP, матрица AGP×KGP×Gradle×JDK) | P0 | XL | 3, ответ вендора по Maven |
 | 6 | Dart-фасад: виджет, контроллер, события, маркеры | P0 | L | 3 (живая проверка — 4 или 5) |
 | 7 | `vk_maps_api`: поиск и геокодинг, polyline | P1 | M | 2 |
 | 8 | `vk_maps_api`: маршрутизация, изохроны, матрица | P1 | M | 7 |
