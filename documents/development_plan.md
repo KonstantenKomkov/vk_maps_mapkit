@@ -176,8 +176,8 @@ Pigeon-контракт остаётся общим в `platform_interface` (Р-
 2. Отправить письмо в `support.maps@lists.vk.team`. Готовый текст и таблица для фиксации переписки —
    [`../docs/questions-for-vendor.md`](../docs/questions-for-vendor.md). Четыре вопроса: (1) адрес Android-выкладки
    после переезда на Nexus, нужны ли креды, актуальные координаты и версии; (2) документация нативного Android SDK
-   и какое поколение считать актуальным; (3) кластеризация и источник для ломаных в нативном SDK; (4) условия EULA
-   для стороннего open-source плагина на pub.dev.
+   и какое поколение считать актуальным; (3) кластеризация и источник для ломаных в нативном SDK; (4) название пакета,
+   упоминание бренда и требования к атрибуции на карте.
 3. Проверить скриптом доступность артефактов и зафиксировать результат в `docs/platform-matrix.md`:
    `pod spec cat VKMapsSDK`, `swift package resolve` на `vk-maps-distribution` 1.4.4.14633, `curl` по Nexus
    (`/service/rest/v1/repositories`, `/service/rest/v1/search?group=com.vk.maps`) и по старым Maven-путям Artifactory.
