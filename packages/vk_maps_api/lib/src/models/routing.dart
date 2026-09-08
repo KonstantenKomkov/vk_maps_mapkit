@@ -188,6 +188,7 @@ class VkRouteLeg {
   const VkRouteLeg({
     required this.summary,
     required this.shape,
+    this.encodedShape = '',
     this.maneuvers = const <VkManeuver>[],
   });
 
@@ -199,6 +200,7 @@ class VkRouteLeg {
     shape: json['shape'] is String
         ? VkPolyline.decode(json['shape'] as String)
         : const <VkGeoPoint>[],
+    encodedShape: json['shape'] as String? ?? '',
     maneuvers:
         (json['maneuvers'] as List<dynamic>?)
             ?.whereType<Map<String, dynamic>>()
@@ -212,6 +214,12 @@ class VkRouteLeg {
 
   /// Геометрия участка: ломаная уже раскодирована.
   final List<VkGeoPoint> shape;
+
+  /// Та же геометрия в исходном виде — закодированной строкой.
+  ///
+  /// В этом виде её принимает карта: `controller.drawRoute(encodedShape)`
+  /// не требует раскодирования и обратной сборки GeoJSON.
+  final String encodedShape;
 
   /// Манёвры участка, если они запрошены.
   final List<VkManeuver> maneuvers;

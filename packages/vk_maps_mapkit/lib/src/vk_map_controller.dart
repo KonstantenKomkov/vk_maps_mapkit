@@ -191,6 +191,31 @@ class VkMapController {
     }
   }
 
+  /// Рисует ломаную по списку точек.
+  ///
+  /// Пригодится, когда геометрия уже раскодирована или собрана вручную;
+  /// для ответа сервиса маршрутизации дешевле [drawRoute].
+  Future<void> drawPolyline(
+    List<VkLatLon> points, {
+    String id = 'polyline',
+    String color = '#0077FF',
+    double width = 6,
+    String? beforeLayerId,
+  }) => _drawGeoJson(
+    id: id,
+    geoJson: VkGeoJson.lineString(points),
+    layer: VkStyleLayer.line(
+      id: id,
+      sourceId: '$id-source',
+      paint: <String, Object?>{'line-color': color, 'line-width': width},
+      layout: const <String, Object?>{
+        'line-cap': 'round',
+        'line-join': 'round',
+      },
+    ),
+    beforeLayerId: beforeLayerId,
+  );
+
   /// Рисует многоугольник по списку точек.
   Future<void> drawPolygon(
     List<VkLatLon> points, {
