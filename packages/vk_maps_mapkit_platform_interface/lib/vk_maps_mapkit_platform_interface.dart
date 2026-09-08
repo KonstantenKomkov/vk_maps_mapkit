@@ -6,4 +6,6 @@
 library;
 
 export 'src/events/map_event.dart';
+export 'src/pigeon/pigeon_vk_maps_platform.dart';
+export 'src/platform_interface/vk_maps_platform.dart';
 export 'src/types/types.dart';

@@ -32,9 +32,9 @@ for p in "${PACKAGES[@]}"; do
   if [ -d "$p/test" ] && [ -n "$(find "$p/test" -name '*_test.dart' -print -quit)" ]; then
     echo "--- test ---"
     if [ "$is_flutter" = 1 ]; then
-      (cd "$p" && flutter test) || fail=1
+      (cd "$p" && flutter test -r github) || fail=1
     else
-      (cd "$p" && dart test) || fail=1
+      (cd "$p" && dart test -r github) || fail=1
     fi
   else
     echo "--- test: нет тестов, пропуск ---"
