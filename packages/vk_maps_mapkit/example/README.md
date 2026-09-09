@@ -1,16 +1,38 @@
 # vk_maps_mapkit_example
 
-Demonstrates how to use the vk_maps_mapkit plugin.
+Пример плагина `vk_maps_mapkit`.
 
-## Getting Started
+| Вкладка | Что показывает |
+| --- | --- |
+| Карта | камера, стили, маркеры по касанию, картинка маркера в стиле |
+| Маршрут | `/directions` из `vk_maps_api` и ломаная маршрута на карте |
+| Поиск | подсказки при вводе, геокодирование и найденное место: маркер в центре карты плюс границы объекта целиком |
+| Изохроны | области достижимости из `/iso` |
+| Статичная | картинка карты по ссылке, без SDK |
 
-This project is a starting point for a Flutter application.
+Камера на «Поиске» строит границы симметрично вокруг найденной точки:
+`pin` объекта редко совпадает с центром его `bbox` — у города точка стоит на
+площади, а границы уходят к окраинам, — поэтому вписывание «как есть»
+сдвигало бы место от центра карты.
 
-A few resources to get you started if this is your first Flutter project:
+Картинка маркера рисуется кодом в [`lib/pin_image.dart`](lib/pin_image.dart):
+маркер ссылается на изображение стиля по `imageId`, поэтому картинку нужно
+положить в стиль до показа маркеров — и вернуть после смены стиля.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Ключ доступа передаётся при запуске — без него REST-сервисы работают на
+демонстрационном сервере, а карта не рисуется:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+make example-ios   VK_MAPS_API_KEY=…   # из корня репозитория
+make example-android VK_MAPS_API_KEY=…
+make example-web   VK_MAPS_API_KEY=…
+```
+
+Или напрямую:
+
+```bash
+flutter run -d chrome --dart-define=VK_MAPS_API_KEY=…
+```
+
+На web библиотеку карты подключать в `web/index.html` не нужно: плагин
+загружает её сам.

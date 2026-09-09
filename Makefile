@@ -1,4 +1,4 @@
-.PHONY: bootstrap check format analyze test gen example-android example-ios clean
+.PHONY: bootstrap check format analyze test gen example-android example-ios example-web clean
 
 bootstrap:  ## Поставить зависимости во всех пакетах
 	@./tool/bootstrap.sh
@@ -25,6 +25,9 @@ example-android: ## Запустить example на Android
 
 example-ios:     ## Запустить example на iOS
 	@cd packages/vk_maps_mapkit/example && flutter run -d ios --dart-define=VK_MAPS_API_KEY=$${VK_MAPS_API_KEY}
+
+example-web:     ## Запустить example в браузере
+	@cd packages/vk_maps_mapkit/example && flutter run -d chrome --dart-define=VK_MAPS_API_KEY=$${VK_MAPS_API_KEY}
 
 clean:      ## Убрать артефакты сборки
 	@find packages -name .dart_tool -type d -prune -exec rm -rf {} + ; \

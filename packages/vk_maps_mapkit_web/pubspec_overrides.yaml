@@ -1,10 +1,4 @@
 # Локальная связка пакетов на время разработки. При публикации не попадает в архив.
 dependency_overrides:
-  vk_maps_mapkit_android:
-    path: ../vk_maps_mapkit_android
-  vk_maps_mapkit_ios:
-    path: ../vk_maps_mapkit_ios
   vk_maps_mapkit_platform_interface:
     path: ../vk_maps_mapkit_platform_interface
-  vk_maps_mapkit_web:
-    path: ../vk_maps_mapkit_web

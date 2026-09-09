@@ -1,6 +1,7 @@
 # vk_maps_mapkit
 
-Карта VK Карт во Flutter: виджет `VkMap` поверх нативных SDK для Android и iOS.
+Карта VK Карт во Flutter: виджет `VkMap` поверх нативных SDK Android и iOS и
+JavaScript SDK `MMR GL JS` для web.
 
 > Неофициальный пакет. Ключ доступа выдаёт VK Карты — получить его можно на
 > [maps.vk.com](https://maps.vk.com/ru/welcome/); условия использования
@@ -68,6 +69,21 @@ end
 Через SPM (`flutter config --enable-swift-package-manager`) дополнительных
 строк не нужно: пакет тянет SDK сам.
 
+### Web
+
+Ничего подключать не нужно: библиотека `MMR GL JS` загружается сама при
+`VkMaps.init`. Если SDK раздаётся со своего хоста или нужна точная версия:
+
+```dart
+import 'package:vk_maps_mapkit_web/vk_maps_mapkit_web.dart';
+
+VkMapsSdkLoader.baseUrl = 'https://maps.vk.com/sdk/js';
+VkMapsSdkLoader.version = '0.2.43'; // по умолчанию '0' — последняя 0.x.x
+```
+
+Импорт web-пакета в кроссплатформенном приложении прячется за условным
+импортом: на Android и iOS его в сборке нет.
+
 ### Android
 
 Минимум — `minSdk 24`, AGP 8.x, KGP 1.9, Gradle 8.x, JDK 17.
@@ -101,7 +117,10 @@ maven { url = uri("https://artifactory-external.vkpartner.ru/artifactory/maps-sd
   атрибуция обязательна: доступны только выравнивание и отступы.
 - **Не запрашивает геолокацию.** Координаты пользователя передаёт приложение
   через `controller.setUserLocation` — оно же решает вопрос с разрешениями.
-- **Не поддерживает web.** Для веба у VK Карт есть собственный JavaScript SDK.
+- **Не рисует на web то, чего нет в web-SDK.** Платформа поддерживается, но
+  часть возможностей отличается: готовых стилей меньше, язык подписей не
+  задаётся, выбора объектов стиля нет. Полный список — в
+  [матрице поддержки](../../docs/platform-matrix.md).
 
 ## REST-сервисы
 
@@ -124,3 +143,8 @@ await controller.drawRoute(route.primary!.legs.first.encodedShape);
 3. На iOS убедитесь, что `platform :ios, '15.0'` стоит в `Podfile`.
 4. На Android проверьте, что репозиторий с SDK доступен: сейчас это главная
    причина, по которой Android-часть не собирается.
+5. На web откройте консоль браузера: не загрузился ли `mmr-gl.js` (адрес
+   задаётся в `VkMapsSdkLoader`) и не запрещает ли WebGL сам браузер.
+6. Если карта есть, а маркеров нет — проверьте, что картинка маркера
+   добавлена в стиль: маркер ссылается на неё по `imageId`, и без неё
+   рисовать нечего. На web об этом приходит ошибка `style-image-missing`.

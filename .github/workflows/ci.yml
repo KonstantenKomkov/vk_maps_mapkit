@@ -20,3 +20,9 @@ jobs:
         run: ./tool/bootstrap.sh
       - name: Проверка
         run: ./tool/check.sh
+
+      - name: Сборка примера для web
+        # Единственная платформа, которую можно собрать в CI целиком:
+        # Android блокирован недоступным артефактом, iOS требует macOS.
+        working-directory: packages/vk_maps_mapkit/example
+        run: flutter build web --release

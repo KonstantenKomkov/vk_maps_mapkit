@@ -1,6 +1,7 @@
 # vk_maps_mapkit
 
-Flutter-обёртка над нативными SDK VK Карт для Android и iOS плюс клиент REST-сервисов VK Карт на чистом Dart.
+Flutter-обёртка над SDK VK Карт — нативными для Android и iOS и JavaScript для web — плюс клиент
+REST-сервисов VK Карт на чистом Dart.
 
 > Неофициальный пакет. Ключ доступа пользователь получает самостоятельно на
 > [maps.vk.com](https://maps.vk.com/ru/welcome/); условия использования определяются договором с VK.
@@ -15,6 +16,7 @@ Flutter-обёртка над нативными SDK VK Карт для Android 
 | [`vk_maps_mapkit_platform_interface`](packages/vk_maps_mapkit_platform_interface) | контракт моста и модели |
 | [`vk_maps_mapkit_android`](packages/vk_maps_mapkit_android) | реализация для Android |
 | [`vk_maps_mapkit_ios`](packages/vk_maps_mapkit_ios) | реализация для iOS |
+| [`vk_maps_mapkit_web`](packages/vk_maps_mapkit_web) | реализация для web поверх `MMR GL JS` |
 | [`vk_maps_api`](packages/vk_maps_api) | REST-клиент, не зависит от Flutter |
 
 ## Разработка
@@ -32,8 +34,8 @@ make gen         # перегенерировать Pigeon-контракт
 - [Принятые решения](docs/design-decisions.md) — что решено и почему, с отвергнутыми вариантами.
 - [Правовые вводные](docs/legal-notes.md) — выписки из условий использования с датой проверки.
 - [Вопросы вендору](docs/questions-for-vendor.md) — готовое письмо и статус переписки.
-- [Матрица поддержки платформ](docs/platform-matrix.md) — что работает на iOS и Android и почему.
-- [Сверка с JavaScript SDK](docs/js-sdk-coverage.md) — что из 111 методов эталонного API есть в плагине.
+- [Матрица поддержки платформ](docs/platform-matrix.md) — что работает на iOS, Android и web и почему.
+- [Сверка с JavaScript SDK](docs/js-sdk-coverage.md) — что из 111 методов web-SDK есть в плагине.
 - [Состояние проекта](docs/status.md) — готовность по этапам и что мешает закрыть.
 - [Чек-лист живой проверки](docs/live-verification-plan.md) — то, что нельзя закрыть автотестами.
 - [Публикация](docs/publishing.md) — порядок и проверки перед релизом.

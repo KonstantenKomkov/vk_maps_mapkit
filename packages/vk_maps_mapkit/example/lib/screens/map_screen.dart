@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:vk_maps_mapkit/vk_maps_mapkit.dart';
+
+import '../pin_image.dart';
 
 /// Экран карты: камера, маркеры, стиль, события.
 class MapScreen extends StatefulWidget {
@@ -31,6 +35,15 @@ class _MapScreenState extends State<MapScreen> {
           onMapCreated: (VkMapController controller) {
             _controller = controller;
             setState(() => _status = 'Карта готова');
+            unawaited(addPinImage(controller));
+          },
+          // Смена стиля пересобирает его целиком, поэтому картинку
+          // маркера нужно положить в новый стиль заново.
+          onStyleApplied: () {
+            final VkMapController? controller = _controller;
+            if (controller != null) {
+              unawaited(addPinImage(controller));
+            }
           },
           onTap: (VkLatLon position) => _addMarker(position),
           onMarkerTap: (VkMarkerId id) =>
@@ -103,7 +116,7 @@ class _MapScreenState extends State<MapScreen> {
         VkMarker(
           markerId: VkMarkerId('m${_markers.length + 1}'),
           position: position,
-          imageId: 'pin',
+          imageId: pinImageId,
         ),
       };
       _status = 'Маркеров: ${_markers.length}';

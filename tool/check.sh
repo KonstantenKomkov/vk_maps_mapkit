@@ -9,6 +9,7 @@ PACKAGES=(
   packages/vk_maps_api
   packages/vk_maps_mapkit_android
   packages/vk_maps_mapkit_ios
+  packages/vk_maps_mapkit_web
   packages/vk_maps_mapkit
 )
 
@@ -40,6 +41,26 @@ for p in "${PACKAGES[@]}"; do
     else
       (cd "$p" && dart test -r github) || fail=1
     fi
+
+    # Часть кода ведёт себя в браузере иначе, чем на виртуальной машине:
+    # целые числа там 32-битные, а проверки типов работают по-своему.
+    # Пакеты, которые доезжают до браузера, поэтому проверяются и там.
+    case "$p" in
+      packages/vk_maps_mapkit_web|packages/vk_maps_api)
+        if [ -n "${CHROME_EXECUTABLE:-}" ] || command -v google-chrome >/dev/null 2>&1 \
+           || command -v chromium >/dev/null 2>&1 \
+           || [ -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]; then
+          echo "--- test в браузере ---"
+          if [ "$is_flutter" = 1 ]; then
+            (cd "$p" && flutter test --platform chrome -r github) || fail=1
+          else
+            (cd "$p" && dart test -p chrome -r github) || fail=1
+          fi
+        else
+          echo "--- test в браузере: Chrome не найден, пропуск ---"
+        fi
+        ;;
+    esac
   else
     echo "--- test: нет тестов, пропуск ---"
   fi

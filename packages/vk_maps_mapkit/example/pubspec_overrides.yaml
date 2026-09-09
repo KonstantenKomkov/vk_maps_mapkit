@@ -10,3 +10,5 @@ dependency_overrides:
     path: ../../vk_maps_mapkit_ios
   vk_maps_mapkit_platform_interface:
     path: ../../vk_maps_mapkit_platform_interface
+  vk_maps_mapkit_web:
+    path: ../../vk_maps_mapkit_web

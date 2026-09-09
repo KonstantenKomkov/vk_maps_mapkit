@@ -3,11 +3,15 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+echo "==> ."
+dart pub get
+
 PACKAGES=(
   packages/vk_maps_mapkit_platform_interface
   packages/vk_maps_api
   packages/vk_maps_mapkit_android
   packages/vk_maps_mapkit_ios
+  packages/vk_maps_mapkit_web
   packages/vk_maps_mapkit
   packages/vk_maps_mapkit/example
 )

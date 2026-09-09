@@ -1,0 +1,9 @@
+name: vk_maps_mapkit_workspace
+description: Корневой пакет репозитория — резолвит flutter_lints для общего analysis_options.yaml.
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
